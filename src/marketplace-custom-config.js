@@ -143,6 +143,51 @@ export const filters = [
       ],
     },
   },
+  {
+    id: 'subjects',
+    label: 'Subjects',
+    type: 'SelectMultipleFilter',
+    group: 'secondary',
+    queryParamNames: ['pub_subjects'],
+    config: {
+      options: [
+        { key: 'sub_math', label: 'Mathematics' },
+        { key: 'sub_physics', label: 'Physics' },
+        { key: 'sub_chemistry', label: 'Chemistry' },
+        { key: 'sub_geography', label: 'Geography' },
+        { key: 'sub_history', label: 'History' },
+        { key: 'sub_biology', label: 'Biology' },
+        { key: 'sub_Literature', label: 'Literature' },
+      ],
+    },
+  },
+  {
+    id: 'levels',
+    label: 'Teaching levels',
+    type: 'SelectMultipleFilter',
+    group: 'secondary',
+    queryParamNames: ['pub_levels'],
+    config: {
+      options: [
+        { key: 'lv_beginner', label: 'Beginner' },
+        { key: 'lv_intermediate', label: 'Intermediate' },
+        { key: 'lv_expert', label: 'Expert' },
+      ],
+    },
+  },
+  {
+    id: 'hours',
+    label: 'Teaching hours',
+    type: 'SelectSingleFilter',
+    group: 'secondary',
+    queryParamNames: ['pub_hours'],
+    config: {
+      options: [
+        { key: 'h_fulltime', label: 'Fulltime' },
+        { key: 'h_parttime', label: 'Parttime' },
+      ],
+    },
+  },
 ];
 
 export const sortConfig = {

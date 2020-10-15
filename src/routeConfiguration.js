@@ -10,6 +10,7 @@ import {
   InboxPage,
   LandingPage,
   ListingPage,
+  TeacherPage,
   ManageListingsPage,
   NotFoundPage,
   PasswordChangePage,
@@ -100,6 +101,12 @@ const routeConfiguration = () => {
       loadData: ListingPage.loadData,
     },
     {
+      path: '/lt/:slug/:id',
+      name: 'TeacherPage',
+      component: props => <TeacherPage {...props} />,
+      loadData: TeacherPage.loadData,
+    },
+    {
       path: '/l/:slug/:id/checkout',
       name: 'CheckoutPage',
       auth: true,
@@ -115,6 +122,14 @@ const routeConfiguration = () => {
       loadData: ListingPage.loadData,
     },
     {
+      path: '/lt/:slug/:id/:variant',
+      name: 'TeacherPageVariant',
+      auth: true,
+      authPage: 'LoginPage',
+      component: props => <TeacherPage {...props} />,
+      loadData: TeacherPage.loadData,
+    },
+    {
       path: '/l/new',
       name: 'NewListingPage',
       auth: true,
@@ -126,13 +141,6 @@ const routeConfiguration = () => {
       ),
     },
     {
-      path: '/l/:slug/:id/:type/:tab',
-      name: 'EditListingPage',
-      auth: true,
-      component: props => <EditListingPage {...props} />,
-      loadData: EditListingPage.loadData,
-    },
-    {
       path: '/lt/new',
       name: 'NewTeacherPage',
       auth: true,
@@ -142,6 +150,13 @@ const routeConfiguration = () => {
           params={{ slug: draftSlug, id: draftId, type: 'new', tab: 'general' }}
         />
       ),
+    },
+    {
+      path: '/l/:slug/:id/:type/:tab',
+      name: 'EditListingPage',
+      auth: true,
+      component: props => <EditListingPage {...props} />,
+      loadData: EditListingPage.loadData,
     },
     {
       path: '/lt/:slug/:id/:type/:tab',
@@ -165,6 +180,12 @@ const routeConfiguration = () => {
       name: 'ListingPageCanonical',
       component: props => <ListingPage {...props} />,
       loadData: ListingPage.loadData,
+    },
+    {
+      path: '/lt/:id',
+      name: 'TeacherPageCanonical',
+      component: props => <TeacherPage {...props} />,
+      loadData: TeacherPage.loadData,
     },
     {
       path: '/u',

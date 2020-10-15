@@ -65,17 +65,27 @@ const priceData = (price, intl) => {
 const createListingURL = (routes, listing) => {
   const id = listing.id.uuid;
   const slug = createSlug(listing.attributes.title);
+  const { isTeacherType } = listing.attributes.publicData;
   const isPendingApproval = listing.attributes.state === LISTING_STATE_PENDING_APPROVAL;
   const isDraft = listing.attributes.state === LISTING_STATE_DRAFT;
   const variant = isDraft
     ? LISTING_PAGE_DRAFT_VARIANT
     : isPendingApproval
-    ? LISTING_PAGE_PENDING_APPROVAL_VARIANT
-    : null;
+      ? LISTING_PAGE_PENDING_APPROVAL_VARIANT
+      : null;
 
   const linkProps =
     isPendingApproval || isDraft
-      ? {
+      ? isTeacherType
+        ? {
+          name: 'TeacherPageVariant',
+          params: {
+            id,
+            slug,
+            variant,
+          },
+        }
+        : {
           name: 'ListingPageVariant',
           params: {
             id,
@@ -83,7 +93,12 @@ const createListingURL = (routes, listing) => {
             variant,
           },
         }
-      : {
+      : isTeacherType
+        ? {
+          name: 'TeacherPage',
+          params: { id, slug },
+        }
+        : {
           name: 'ListingPage',
           params: { id, slug },
         };
@@ -103,8 +118,8 @@ const formatTitle = (title, maxLength) => {
         {word}
       </span>
     ) : (
-      word
-    );
+        word
+      );
   });
 };
 
@@ -128,7 +143,7 @@ export const ManageListingCardComponent = props => {
   const classes = classNames(rootClassName || css.root, className);
   const currentListing = ensureOwnListing(listing);
   const id = currentListing.id.uuid;
-  const { title = '', price, state } = currentListing.attributes;
+  const { title = '', price, state, publicData } = currentListing.attributes;
   const slug = createSlug(title);
   const isPendingApproval = state === LISTING_STATE_PENDING_APPROVAL;
   const isClosed = state === LISTING_STATE_CLOSED;
@@ -159,11 +174,13 @@ export const ManageListingCardComponent = props => {
   const isNightly = unitType === LINE_ITEM_NIGHT;
   const isDaily = unitType === LINE_ITEM_DAY;
 
-  const unitTranslationKey = isNightly
-    ? 'ManageListingCard.perNight'
-    : isDaily
-    ? 'ManageListingCard.perDay'
-    : 'ManageListingCard.perUnit';
+  const unitTranslationKey = publicData.isTeacherType
+    ? 'ManageListingCard.perHour'
+    : isNightly
+      ? 'ManageListingCard.perNight'
+      : isDaily
+        ? 'ManageListingCard.perDay'
+        : 'ManageListingCard.perUnit';
 
   return (
     <div className={classes}>
@@ -236,6 +253,11 @@ export const ManageListingCardComponent = props => {
             </Menu>
           </div>
         </div>
+        <div className={css.listingType}>
+          {publicData.isTeacherType
+            ? (<div className={css.type}> Listing type: TEACHER </div>)
+            : (<div className={css.type}> Listing type: SAUNA </div>)}
+        </div>
         {isDraft ? (
           <React.Fragment>
             <div className={classNames({ [css.draftNoImage]: !firstImage })} />
@@ -306,10 +328,10 @@ export const ManageListingCardComponent = props => {
               </div>
             </React.Fragment>
           ) : (
-            <div className={css.noPrice}>
-              <FormattedMessage id="ManageListingCard.priceNotSet" />
-            </div>
-          )}
+              <div className={css.noPrice}>
+                <FormattedMessage id="ManageListingCard.priceNotSet" />
+              </div>
+            )}
         </div>
 
         <div className={css.mainInfo}>
@@ -330,7 +352,7 @@ export const ManageListingCardComponent = props => {
         <div className={css.manageLinks}>
           <NamedLink
             className={css.manageLink}
-            name="EditListingPage"
+            name={publicData.isTeacherType ? "EditTeacherPage" : "EditListingPage"}
             params={{ id, slug, type: editListingLinkType, tab: 'description' }}
           >
             <FormattedMessage id="ManageListingCard.editListing" />
@@ -342,7 +364,7 @@ export const ManageListingCardComponent = props => {
 
               <NamedLink
                 className={css.manageLink}
-                name="EditListingPage"
+                name={publicData.isTeacherType ? "EditTeacherPage" : "EditListingPage"}
                 params={{ id, slug, type: editListingLinkType, tab: 'availability' }}
               >
                 <FormattedMessage id="ManageListingCard.manageAvailability" />

@@ -9,6 +9,7 @@ import EditListingPage from './EditListingPage/EditListingPage.duck';
 import EditTeacherPage from './EditTeacherPage/EditTeacherPage.duck';
 import InboxPage from './InboxPage/InboxPage.duck';
 import ListingPage from './ListingPage/ListingPage.duck';
+import TeacherPage from './TeacherPage/TeacherPage.duck';
 import ManageListingsPage from './ManageListingsPage/ManageListingsPage.duck';
 import PasswordChangePage from './PasswordChangePage/PasswordChangePage.duck';
 import PasswordRecoveryPage from './PasswordRecoveryPage/PasswordRecoveryPage.duck';
@@ -33,6 +34,7 @@ export {
   PasswordResetPage,
   PaymentMethodsPage,
   ProfilePage,
+  TeacherPage,
   ProfileSettingsPage,
   SearchPage,
   StripePayoutPage,

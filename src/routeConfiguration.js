@@ -172,7 +172,13 @@ const routeConfiguration = () => {
       component: props => <EditListingPage {...props} />,
       loadData: EditListingPage.loadData,
     },
-
+    {
+      path: '/lt/:slug/:id/:type/:tab/:returnURLType',
+      name: 'EditTeachingStripeOnboardingPage',
+      auth: true,
+      component: props => <EditTeacherPage {...props} />,
+      loadData: EditTeacherPage.loadData,
+    },
     // Canonical path should be after the `/l/new` path since they
     // conflict and `new` is not a valid listing UUID.
     {

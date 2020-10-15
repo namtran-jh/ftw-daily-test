@@ -562,7 +562,7 @@ const mapStateToProps = state => {
     fetchLineItemsInProgress,
     fetchLineItemsError,
     enquiryModalOpenForListingId,
-  } = state.ListingPage;
+  } = state.TeacherPage;
   const { currentUser } = state.user;
 
   const getListing = id => {

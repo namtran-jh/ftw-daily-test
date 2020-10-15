@@ -48,14 +48,14 @@ const EditTeacherGeneralPanel = props => {
       <h1 className={css.title}>{panelTitle}</h1>
       <EditTeacherGeneralForm
         className={css.form}
-        initialValues={{ title, description, subjects: publicData.subjects, levels: publicData.levels, hours: publicData.hours }}
+        initialValues={{ title, description, subjects: publicData.subjects, levels: publicData.levels, hours: publicData.hours, isTeacherType: publicData.isTeacherType }}
         saveActionMsg={submitButtonText}
         onSubmit={values => {
-          const { title, description, subjects = [], levels = [], hours } = values;
+          const { title, description, subjects = [], levels = [], hours, isTeacherType = true } = values;
           const updateValues = {
             title: title.trim(),
             description,
-            publicData: { subjects, levels, hours },
+            publicData: { subjects, levels, hours, isTeacherType },
           };
 
           onSubmit(updateValues);

@@ -129,6 +129,13 @@ export const EditTeacherPageComponent = props => {
 
     return <NamedRedirect {...redirectProps} />;
   } else if (showForm) {
+    if (params.type !== "new") {
+      const isTeacherType = currentListing.attributes.publicData.isTeacherType;
+      if (!isTeacherType) {
+        return <NamedRedirect name="EditListingPage" params={params} />;
+      }
+    }
+
     const {
       createListingDraftError = null,
       publishListingError = null,

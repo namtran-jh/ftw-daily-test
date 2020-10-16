@@ -237,6 +237,12 @@ export class ListingPageComponent extends Component {
       return <NamedRedirect name="ListingPage" params={params} search={location.search} />;
     }
 
+    const isTeacherType = currentListing.attributes.publicData.isTeacherType;
+
+    if (isTeacherType) {
+      return <NamedRedirect name="TeacherPage" params={params} search={location.search} />;
+    }
+
     const {
       description = '',
       geolocation = null,

@@ -215,7 +215,7 @@ export class TeacherPageComponent extends Component {
     const listingType = isDraftVariant
       ? LISTING_PAGE_PARAM_TYPE_DRAFT
       : LISTING_PAGE_PARAM_TYPE_EDIT;
-    const listingTab = isDraftVariant ? 'photos' : 'description';
+    const listingTab = isDraftVariant ? 'availability' : 'general';
 
     const isApproved =
       currentListing.id && currentListing.attributes.state !== LISTING_STATE_PENDING_APPROVAL;
@@ -235,6 +235,12 @@ export class TeacherPageComponent extends Component {
 
     if (shouldShowPublicListingPage) {
       return <NamedRedirect name="TeacherPage" params={params} search={location.search} />;
+    }
+
+    const isTeacherType = currentListing.attributes.publicData.isTeacherType;
+
+    if (!isTeacherType) {
+      return <NamedRedirect name="ListingPage" params={params} search={location.search} />;
     }
 
     const {
@@ -382,10 +388,11 @@ export class TeacherPageComponent extends Component {
     const subjectOptions = findOptionsForSelectFilter('subjects', filterConfig);
     const levelOptions = findOptionsForSelectFilter('levels', filterConfig);
     const hourOptions = findOptionsForSelectFilter('hours', filterConfig);
+    const numberOfHourOptions = findOptionsForSelectFilter('numberOfHours', filterConfig);
     const hours =
       publicData && publicData.hours ? (
         <span>
-          {hourLabel(hourOptions, publicData.hours)}
+          {hourLabel(hourOptions, publicData.hours)} ({hourLabel(numberOfHourOptions, publicData.numberOfHours)})
           <span className={css.separator}>•</span>
         </span>
       ) : null;

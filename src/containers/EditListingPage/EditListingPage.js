@@ -112,23 +112,30 @@ export const EditListingPageComponent = props => {
 
     const redirectProps = isPendingApproval
       ? {
-          name: 'ListingPageVariant',
-          params: {
-            id: listingId.uuid,
-            slug: listingSlug,
-            variant: LISTING_PAGE_PENDING_APPROVAL_VARIANT,
-          },
-        }
+        name: 'ListingPageVariant',
+        params: {
+          id: listingId.uuid,
+          slug: listingSlug,
+          variant: LISTING_PAGE_PENDING_APPROVAL_VARIANT,
+        },
+      }
       : {
-          name: 'ListingPage',
-          params: {
-            id: listingId.uuid,
-            slug: listingSlug,
-          },
-        };
+        name: 'ListingPage',
+        params: {
+          id: listingId.uuid,
+          slug: listingSlug,
+        },
+      };
 
     return <NamedRedirect {...redirectProps} />;
   } else if (showForm) {
+    if (params.type !== "new") {
+      const isTeacherType = currentListing.attributes.publicData.isTeacherType;
+      if (isTeacherType) {
+        return <NamedRedirect name="EditTeacherPage" params={params} />;
+      }
+    }
+
     const {
       createListingDraftError = null,
       publishListingError = null,

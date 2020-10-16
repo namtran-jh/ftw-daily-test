@@ -81,7 +81,7 @@ const tabCompleted = (tab, listing) => {
 
   switch (tab) {
     case GENERAL:
-      return !!(description && title && publicData.subjects && publicData.levels && publicData.hours);
+      return !!(description && title && publicData.subjects && publicData.levels && publicData.hours && publicData.numberOfHours);
     case LOCATION:
       return !!(geolocation && publicData && publicData.location && publicData.location.address);
     case PRICING:

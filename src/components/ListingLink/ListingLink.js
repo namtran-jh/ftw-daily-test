@@ -28,7 +28,7 @@ const ListingLink = props => {
     return null;
   }
   const id = listing.id.uuid;
-  const { title, state } = listing.attributes;
+  const { title, state, publicData } = listing.attributes;
   const slug = createSlug(title);
   const richTitle = (
     <span>
@@ -44,10 +44,19 @@ const ListingLink = props => {
   const variant = isPendingApproval
     ? LISTING_PAGE_PENDING_APPROVAL_VARIANT
     : isDraft
-    ? LISTING_PAGE_DRAFT_VARIANT
-    : null;
+      ? LISTING_PAGE_DRAFT_VARIANT
+      : null;
   const linkProps = !!variant
-    ? {
+    ? publicData.isTeacherType
+      ? {
+        name: 'TeacherPageVariant',
+        params: {
+          id,
+          slug,
+          variant,
+        },
+      }
+      : {
         name: 'ListingPageVariant',
         params: {
           id,
@@ -55,7 +64,12 @@ const ListingLink = props => {
           variant,
         },
       }
-    : {
+    : publicData.isTeacherType
+      ? {
+        name: 'TeacherPage',
+        params: { id, slug },
+      }
+      : {
         name: 'ListingPage',
         params: { id, slug },
       };

@@ -188,6 +188,25 @@ export const filters = [
       ],
     },
   },
+  {
+    id: 'numberOfHours',
+    label: 'Number of hours',
+    type: 'SelectSingleFilter',
+    group: 'secondary',
+    queryParamNames: ['pub_numberOfHours'],
+    config: {
+      options: [
+        { key: 'noh_1', label: '1 hour' },
+        { key: 'noh_2', label: '2 hours' },
+        { key: 'noh_3', label: '3 hours' },
+        { key: 'noh_4', label: '4 hours' },
+        { key: 'noh_5', label: '5 hours' },
+        { key: 'noh_6', label: '6 hours' },
+        { key: 'noh_7', label: '7 hours' },
+        { key: 'noh_8', label: '8 hours' },
+      ],
+    },
+  },
 ];
 
 export const sortConfig = {

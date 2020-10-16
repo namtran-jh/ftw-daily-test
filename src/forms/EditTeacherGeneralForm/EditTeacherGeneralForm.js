@@ -34,6 +34,7 @@ const EditTeacherGeneralFormComponent = props => (
         updateInProgress,
         fetchErrors,
         filterConfig,
+        values
       } = formRenderProps;
 
       const titleMessage = intl.formatMessage({ id: 'EditTeacherGeneralForm.title' });
@@ -84,6 +85,7 @@ const EditTeacherGeneralFormComponent = props => (
       const optionsSubjects = findOptionsForSelectFilter('subjects', filterConfig);
       const optionsLevels = findOptionsForSelectFilter('levels', filterConfig);
       const optionsHours = findOptionsForSelectFilter('hours', filterConfig);
+      const optionsNumberOfHours = findOptionsForSelectFilter('numberOfHours', filterConfig);
 
       const subjectMessage = intl.formatMessage({ id: 'EditTeacherGeneralForm.subject' });
       const subjectRequiredMessage = intl.formatMessage({
@@ -147,7 +149,16 @@ const EditTeacherGeneralFormComponent = props => (
           <CustomHourSelectFieldMaybe
             id="hours"
             name="hours"
-            hours={optionsHours}
+            options={optionsHours}
+            intl={intl}
+          />
+
+          <CustomHourSelectFieldMaybe
+            id="numberOfHours"
+            name="numberOfHours"
+            isNumberOfHours={true}
+            formValues={values}
+            options={optionsNumberOfHours}
             intl={intl}
           />
 

@@ -5,19 +5,39 @@ import { FieldSelect } from '../../components';
 import css from './EditTeacherGeneralForm.css';
 
 const CustomHourSelectFieldMaybe = props => {
-  const { name, id, hours, intl } = props;
+  const { name, id, options, intl, isNumberOfHours, formValues } = props;
   const hourLabel = intl.formatMessage({
-    id: 'EditTeacherGeneralForm.hourLabel',
+    id: isNumberOfHours ? 'EditTeacherGeneralForm.numberOfHourLabel' : 'EditTeacherGeneralForm.hourLabel',
   });
   const hourPlaceholder = intl.formatMessage({
-    id: 'EditTeacherGeneralForm.hourPlaceholder',
+    id: isNumberOfHours ? 'EditTeacherGeneralForm.numberOfHourPlaceholder' : 'EditTeacherGeneralForm.hourPlaceholder',
   });
   const hourRequired = required(
     intl.formatMessage({
-      id: 'EditTeacherGeneralForm.hourRequired',
+      id: isNumberOfHours ? 'EditTeacherGeneralForm.numberOfHourRequired' : 'EditTeacherGeneralForm.hourRequired',
     })
   );
-  return hours ? (
+
+  if (!isNumberOfHours)
+    return options ? (
+      <FieldSelect
+        className={css.hour}
+        name={name}
+        id={id}
+        label={hourLabel}
+        validate={hourRequired}
+      >
+        <option disabled value="">
+          {hourPlaceholder}
+        </option>
+        {options.map(opt => (
+          <option key={opt.key} value={opt.key}>
+            {opt.label}
+          </option>
+        ))}
+      </FieldSelect>
+    ) : null;
+  else return options ? (
     <FieldSelect
       className={css.hour}
       name={name}
@@ -28,11 +48,17 @@ const CustomHourSelectFieldMaybe = props => {
       <option disabled value="">
         {hourPlaceholder}
       </option>
-      {hours.map(c => (
-        <option key={c.key} value={c.key}>
-          {c.label}
-        </option>
-      ))}
+      {formValues.hours === "h_fulltime"
+        ? (
+          <option key="noh_8" value="noh_8">
+            8 hours
+          </option>
+        )
+        : options.map(opt => (
+          <option key={opt.key} value={opt.key}>
+            {opt.label}
+          </option>
+        ))}
     </FieldSelect>
   ) : null;
 };

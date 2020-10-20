@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import { bool, func, object, string } from 'prop-types';
 import { compose } from 'redux';
 import { Form as FinalForm } from 'react-final-form';
+import * as validators from '../../util/validators';
 import { intlShape, injectIntl, FormattedMessage } from '../../util/reactIntl';
 import classNames from 'classnames';
 import { propTypes } from '../../util/types';
-import { Form, Button } from '../../components';
+import { Form, Button, FieldTextInput } from '../../components';
+import { OnChange } from 'react-final-form-listeners'
 
 import ManageAvailabilityCalendar from './ManageAvailabilityCalendar';
 import css from './EditTeacherAvailabilityForm.css';
@@ -22,7 +24,7 @@ export class EditTeacherAvailabilityFormComponent extends Component {
             disabled,
             ready,
             handleSubmit,
-            //intl,
+            intl,
             invalid,
             pristine,
             saveActionMsg,
@@ -32,6 +34,7 @@ export class EditTeacherAvailabilityFormComponent extends Component {
             availability,
             availabilityPlan,
             listingId,
+            seatInputChange
           } = formRenderProps;
 
           const errorMessage = updateError ? (
@@ -39,6 +42,26 @@ export class EditTeacherAvailabilityFormComponent extends Component {
               <FormattedMessage id="EditTeacherAvailabilityForm.updateFailed" />
             </p>
           ) : null;
+
+          // Seats of each day's booking
+          const seatMessage = intl.formatMessage({
+            id: 'EditTeacherAvailabilityForm.seatInput',
+          });
+          const seatPlaceholderMessage = intl.formatMessage({
+            id: 'EditTeacherAvailabilityForm.seatInputPlaceholder',
+          });
+
+          const seatRequired = validators.required(
+            intl.formatMessage({
+              id: 'EditTeacherAvailabilityForm.seatRequired',
+            })
+          );
+          const seatNumberFormatRequired = validators.numberFormatValid(
+            intl.formatMessage({
+              id: 'EditTeacherAvailabilityForm.seatNumberFormatRequired',
+            })
+          );
+          const seatValidators = validators.composeValidators(seatRequired, seatNumberFormatRequired)
 
           const classes = classNames(rootClassName || css.root, className);
           const submitReady = (updated && pristine) || ready;
@@ -48,6 +71,23 @@ export class EditTeacherAvailabilityFormComponent extends Component {
           return (
             <Form className={classes} onSubmit={handleSubmit}>
               {errorMessage}
+
+              <FieldTextInput
+                id="seat"
+                name="seat"
+                className={css.seatInput}
+                type="text"
+                autoFocus
+                label={seatMessage}
+                placeholder={seatPlaceholderMessage}
+                validate={seatValidators}
+              />
+              <OnChange name="seat">
+                {(value, previous) => {
+                  seatInputChange(value === "" ? 0 : Number.parseInt(value));
+                }}
+              </OnChange>
+
               <div className={css.calendarWrapper}>
                 <ManageAvailabilityCalendar
                   availability={availability}

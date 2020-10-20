@@ -55,3 +55,12 @@
     margin-top: 86px;
   }
 }
+
+.seatInput {
+  flex-shrink: 0;
+  margin-bottom: 24px;
+
+  @media (--viewportMedium) {
+    margin-bottom: 32px;
+  }
+}

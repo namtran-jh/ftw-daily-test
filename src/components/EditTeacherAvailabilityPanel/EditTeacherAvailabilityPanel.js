@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { bool, func, object, shape, string } from 'prop-types';
 import classNames from 'classnames';
 import { FormattedMessage } from '../../util/reactIntl';
@@ -25,22 +25,24 @@ const EditTeacherAvailabilityPanel = props => {
     errors,
   } = props;
 
+  const [seatInput, setSeatInput] = useState(ensureOwnListing(listing).attributes.availabilityPlan ? ensureOwnListing(listing).attributes.availabilityPlan.entries[0].seats : 0);
+
   const classes = classNames(rootClassName || css.root, className);
   const currentListing = ensureOwnListing(listing);
   const isPublished = currentListing.id && currentListing.attributes.state !== LISTING_STATE_DRAFT;
   const defaultAvailabilityPlan = {
     type: 'availability-plan/day',
     entries: [
-      { dayOfWeek: 'mon', seats: 0 },
-      { dayOfWeek: 'tue', seats: 0 },
-      { dayOfWeek: 'wed', seats: 0 },
-      { dayOfWeek: 'thu', seats: 0 },
-      { dayOfWeek: 'fri', seats: 0 },
-      { dayOfWeek: 'sat', seats: 0 },
-      { dayOfWeek: 'sun', seats: 0 },
+      { dayOfWeek: 'mon', seats: seatInput },
+      { dayOfWeek: 'tue', seats: seatInput },
+      { dayOfWeek: 'wed', seats: seatInput },
+      { dayOfWeek: 'thu', seats: seatInput },
+      { dayOfWeek: 'fri', seats: seatInput },
+      { dayOfWeek: 'sat', seats: seatInput },
+      { dayOfWeek: 'sun', seats: seatInput },
     ],
   };
-  const availabilityPlan = currentListing.attributes.availabilityPlan || defaultAvailabilityPlan;
+  const availabilityPlan = defaultAvailabilityPlan;
 
   return (
     <div className={classes}>
@@ -57,7 +59,7 @@ const EditTeacherAvailabilityPanel = props => {
       <EditTeacherAvailabilityForm
         className={css.form}
         listingId={currentListing.id}
-        initialValues={{ availabilityPlan }}
+        initialValues={{ seat: seatInput, availabilityPlan }}
         availability={availability}
         availabilityPlan={availabilityPlan}
         onSubmit={() => {
@@ -67,6 +69,7 @@ const EditTeacherAvailabilityPanel = props => {
           // which is visible on this panel.
           onSubmit({ availabilityPlan });
         }}
+        seatInputChange={val => setSeatInput(val)}
         onChange={onChange}
         saveActionMsg={submitButtonText}
         disabled={disabled}

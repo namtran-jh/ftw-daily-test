@@ -105,6 +105,7 @@ export const bookingDatesRequired = (inValidStartDateMessage, inValidEndDateMess
 // Source: http://www.regular-expressions.info/email.html
 // See the link above for an explanation of the tradeoffs.
 const EMAIL_RE = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+const NUMSEAT_RE = /^\d+$/;
 
 export const emailFormatValid = message => value => {
   return value && EMAIL_RE.test(value) ? VALID : message;
@@ -117,6 +118,16 @@ export const moneySubUnitAmountAtLeast = (message, minValue) => value => {
 const parseNum = str => {
   const num = Number.parseInt(str, 10);
   return Number.isNaN(num) ? null : num;
+};
+
+const parseSeat = str => {
+  if (!NUMSEAT_RE.test(str)) return null;
+  const num = Number.parseInt(str, 10);
+  return Number.isNaN(num) ? null : num >= 0 ? num : null;
+};
+
+export const numberFormatValid = message => value => {
+  return value && parseSeat(value) !== null ? VALID : message
 };
 
 export const ageAtLeast = (message, minYears) => value => {

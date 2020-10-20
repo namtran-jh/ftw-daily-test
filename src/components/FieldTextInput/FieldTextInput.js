@@ -59,16 +59,16 @@ class FieldTextInputComponent extends Component {
     const maxLength = CONTENT_MAX_LENGTH;
     const inputProps = isTextarea
       ? {
-          className: inputClasses,
-          id,
-          rows: 1,
-          maxLength,
-          ...refMaybe,
-          ...inputWithoutType,
-          ...rest,
-        }
+        className: inputClasses,
+        id,
+        rows: 1,
+        maxLength,
+        ...refMaybe,
+        ...inputWithoutType,
+        ...rest,
+      }
       : isUncontrolled
-      ? {
+        ? {
           className: inputClasses,
           id,
           type,
@@ -77,7 +77,7 @@ class FieldTextInputComponent extends Component {
           ...inputWithoutValue,
           ...rest,
         }
-      : { className: inputClasses, id, type, ...refMaybe, ...input, ...rest };
+        : { className: inputClasses, id, type, ...refMaybe, ...input, ...rest };
 
     const classes = classNames(rootClassName || css.root, className);
     return (

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import { func, object, shape, string } from 'prop-types';
 import {
   DayPickerSingleDateController,
@@ -162,7 +162,7 @@ const dateModifiers = (availabilityPlan, exceptions, bookings, date) => {
   };
 };
 
-const renderDayContents = (calendar, availabilityPlan) => date => {
+const renderDayContents = (calendar, availabilityPlan, changeSeatsEditView) => date => {
   // This component is for day/night based processes. If time-based process is used,
   // you might want to deal with local dates using monthIdString instead of monthIdStringInUTC.
   const { exceptions = [], bookings = [] } = calendar[monthIdStringInUTC(date)] || {};
@@ -172,6 +172,9 @@ const renderDayContents = (calendar, availabilityPlan) => date => {
     bookings,
     date
   );
+
+  const isExceptionsExisted = findException(exceptions, date);
+  const seatsOfSingleDate = isExceptionsExisted !== undefined ? isExceptionsExisted.availabilityException.attributes.seats : availabilityPlan.entries[0].seats;
 
   const dayClasses = classNames(css.default, {
     [css.outsideRange]: isOutsideRange,
@@ -183,6 +186,12 @@ const renderDayContents = (calendar, availabilityPlan) => date => {
 
   return (
     <div className={css.dayWrapper}>
+      {!isOutsideRange &&
+        <div className={css.seatNumbers} onClick={(e) => { e.stopPropagation(); changeSeatsEditView(date, seatsOfSingleDate) }}>
+          <span role="img" aria-label="seats">👨‍👩‍👧‍👦:&nbsp;</span>
+          <span>{seatsOfSingleDate}</span>
+        </div>
+      }
       <span className={dayClasses}>
         {isInProgress ? (
           <IconSpinner rootClassName={css.inProgress} />
@@ -199,6 +208,24 @@ const makeDraftException = (exceptions, start, end, seats) => {
   return { availabilityException: draft };
 };
 
+const ManageSeatsOfSingleDate = (props) => {
+  const [seatSingleDate, setSeatSingleDate] = useState(props.seats);
+
+  const saveNewSeatsOfSingleDate = () => {
+    props.onDateChange(props.date, Number.parseInt(seatSingleDate), true);
+    props.setStateSeatsEditView(props.date, seatSingleDate);
+  }
+
+  return (
+    <div className={css.seatsOfSingleDateArea}>
+      <div className={css.seatsOfSingleDateBox}>
+        <input className={css.seatsOfSingleDateInput} type="text" value={seatSingleDate} onChange={e => setSeatSingleDate(e.target.value)} />
+        <button className={css.seatsOfSingleDateButton} onClick={saveNewSeatsOfSingleDate}>Save</button>
+      </div>
+    </div>
+  )
+}
+
 ////////////////////////////////
 // ManageAvailabilityCalendar //
 ////////////////////////////////
@@ -214,6 +241,7 @@ class ManageAvailabilityCalendar extends Component {
       currentMonth: moment().startOf('month'),
       focused: true,
       date: null,
+      seatsEditView: false
     };
 
     this.fetchMonthData = this.fetchMonthData.bind(this);
@@ -221,6 +249,9 @@ class ManageAvailabilityCalendar extends Component {
     this.onDateChange = this.onDateChange.bind(this);
     this.onFocusChange = this.onFocusChange.bind(this);
     this.onMonthClick = this.onMonthClick.bind(this);
+    this.changeSeatsEditView = this.changeSeatsEditView.bind(this);
+    this.setStateSeatsEditView = this.setStateSeatsEditView.bind(this);
+    this.seatsEditForm = null;
   }
 
   componentDidMount() {
@@ -306,14 +337,14 @@ class ManageAvailabilityCalendar extends Component {
     }
   }
 
-  onDateChange(date) {
+  onDateChange(date, seats = 1, isForce = false) {
     this.setState({ date });
 
     const { availabilityPlan, availability } = this.props;
     const calendar = availability.calendar;
     // This component is for day/night based processes. If time-based process is used,
     // you might want to deal with local dates using monthIdString instead of monthIdStringInUTC.
-    const { exceptions = [], bookings = [] } = calendar[monthIdStringInUTC(date)] || {};
+    const { exceptions = [], bookings = [] } = calendar[monthIdString(date)] || {};
     const { isPast, isBlocked, isBooked, isInProgress } = dateModifiers(
       availabilityPlan,
       exceptions,
@@ -326,10 +357,11 @@ class ManageAvailabilityCalendar extends Component {
       return;
     } else if (isBlocked) {
       // Unblock the date (seats = 1)
-      this.onDayAvailabilityChange(date, 1, exceptions);
+      this.onDayAvailabilityChange(date, seats, exceptions);
     } else {
+      if (isForce) this.onDayAvailabilityChange(date, seats, exceptions);
       // Block the date (seats = 0)
-      this.onDayAvailabilityChange(date, 0, exceptions);
+      else this.onDayAvailabilityChange(date, 0, exceptions);
     }
   }
 
@@ -362,6 +394,15 @@ class ManageAvailabilityCalendar extends Component {
         }
       }
     );
+  }
+
+  changeSeatsEditView(date, seatsOfSingleDate) {
+    this.seatsEditForm = <ManageSeatsOfSingleDate onDateChange={this.onDateChange} setStateSeatsEditView={this.setStateSeatsEditView} seats={seatsOfSingleDate} date={date} />;
+    this.setStateSeatsEditView();
+  }
+
+  setStateSeatsEditView() {
+    this.setState({ seatsEditView: !this.state.seatsEditView });
   }
 
   render() {
@@ -417,7 +458,7 @@ class ManageAvailabilityCalendar extends Component {
               navNext={<IconArrowHead direction="right" />}
               weekDayFormat="ddd"
               daySize={daySize}
-              renderDayContents={renderDayContents(calendar, availabilityPlan)}
+              renderDayContents={renderDayContents(calendar, availabilityPlan, this.changeSeatsEditView)}
               focused={focused}
               date={date}
               onDateChange={this.onDateChange}
@@ -463,6 +504,7 @@ class ManageAvailabilityCalendar extends Component {
             />
           </p>
         ) : null}
+        {this.state.seatsEditView ? this.seatsEditForm : ''}
       </div>
     );
   }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { FormattedMessage } from '../../util/reactIntl';
+import { displayMainImage } from '../../util/displayImage';
 import { ResponsiveImage, Modal, ImageCarousel } from '../../components';
 import ActionBarMaybe from './ActionBarMaybe';
 
@@ -17,8 +18,11 @@ const SectionImages = props => {
     onManageDisableScrolling,
   } = props;
 
-  const hasImages = listing.images && listing.images.length > 0;
-  const firstImage = hasImages ? listing.images[0] : null;
+  const { publicData } = listing.attributes;
+
+  const mainImage = publicData.isTeacherType ? displayMainImage(publicData.mainImage, listing.images) : listing.images;
+  const hasImages = mainImage && mainImage.length > 0;
+  const firstImage = hasImages ? mainImage[0] : null;
 
   // Action bar is wrapped with a div that prevents the click events
   // to the parent that would otherwise open the image carousel
@@ -31,8 +35,8 @@ const SectionImages = props => {
   const viewPhotosButton = hasImages ? (
     <button className={css.viewPhotos} onClick={handleViewPhotosClick}>
       <FormattedMessage
-        id="ListingPage.viewImagesButton"
-        values={{ count: listing.images.length }}
+        id="TeacherPage.viewImagesButton"
+        values={{ count: mainImage.length }}
       />
     </button>
   ) : null;
@@ -57,7 +61,7 @@ const SectionImages = props => {
         </div>
       </div>
       <Modal
-        id="ListingPage.imageCarousel"
+        id="TeacherPage.imageCarousel"
         scrollLayerClassName={css.carouselModalScrollLayer}
         containerClassName={css.carouselModalContainer}
         lightCloseButton
@@ -66,7 +70,7 @@ const SectionImages = props => {
         usePortal
         onManageDisableScrolling={onManageDisableScrolling}
       >
-        <ImageCarousel images={listing.images} />
+        <ImageCarousel images={mainImage} />
       </Modal>
     </div>
   );

@@ -54,6 +54,7 @@ import SectionHeading from './SectionHeading';
 import SectionDescriptionMaybe from './SectionDescriptionMaybe';
 import SectionSubjectsMaybe from './SectionSubjectsMaybe';
 import SectionLevelsMaybe from './SectionLevelsMaybe';
+import SectionOtherImage from './SectionOtherImage';
 import SectionReviews from './SectionReviews';
 import SectionHostMaybe from './SectionHostMaybe';
 import SectionMapMaybe from './SectionMapMaybe';
@@ -88,6 +89,7 @@ export class TeacherPageComponent extends Component {
     this.state = {
       pageClassNames: [],
       imageCarouselOpen: false,
+      otherImageCarouselOpen: false,
       enquiryModalOpen: enquiryModalOpenForListingId === params.id,
     };
 
@@ -325,6 +327,13 @@ export class TeacherPageComponent extends Component {
         imageCarouselOpen: true,
       });
     };
+
+    const handleViewOtherPhotosClick = () => {
+      this.setState({
+        otherImageCarouselOpen: true,
+      });
+    };
+
     const authorAvailable = currentListing && currentListing.author;
     const userAndListingAuthorAvailable = !!(currentUser && authorAvailable);
     const isOwnListing =
@@ -452,6 +461,13 @@ export class TeacherPageComponent extends Component {
                     geolocation={geolocation}
                     publicData={publicData}
                     listingId={currentListing.id}
+                  />
+                  <SectionOtherImage
+                    listing={currentListing}
+                    otherImageCarouselOpen={this.state.otherImageCarouselOpen}
+                    onOtherImageCarouselClose={() => this.setState({ otherImageCarouselOpen: false })}
+                    handleViewOtherPhotosClick={handleViewOtherPhotosClick}
+                    onManageDisableScrolling={onManageDisableScrolling}
                   />
                   <SectionReviews reviews={reviews} fetchReviewsError={fetchReviewsError} />
                   <SectionHostMaybe

@@ -8,6 +8,7 @@ import { formatMoney } from '../../util/currency';
 import { ensureListing, ensureUser } from '../../util/data';
 import { richText } from '../../util/richText';
 import { createSlug } from '../../util/urlHelpers';
+import { displayMainImage } from '../../util/displayImage';
 import config from '../../config';
 import { NamedLink, ResponsiveImage } from '../../components';
 
@@ -50,8 +51,9 @@ export const ListingCardComponent = props => {
   const slug = createSlug(title);
   const author = ensureUser(listing.author);
   const authorName = author.attributes.profile.displayName;
+  const mainImage = publicData.isTeacherType ? displayMainImage(publicData.mainImage, currentListing.images) : currentListing.images;
   const firstImage =
-    currentListing.images && currentListing.images.length > 0 ? currentListing.images[0] : null;
+    mainImage && mainImage.length > 0 ? mainImage[0] : null;
 
   const { formattedPrice, priceTitle } = priceData(price, intl);
 

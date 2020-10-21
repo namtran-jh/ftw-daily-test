@@ -3,6 +3,7 @@ import { bool, func, object, shape, string, oneOf } from 'prop-types';
 import { compose } from 'redux';
 import { withRouter } from 'react-router-dom';
 import { intlShape, injectIntl } from '../../util/reactIntl';
+import { displayMainImage, displayOtherImage } from '../../util/displayImage';
 import { connect } from 'react-redux';
 import { types as sdkTypes } from '../../util/sdkLoader';
 import {
@@ -36,6 +37,12 @@ import {
   requestImageUpload,
   updateImageOrder,
   removeListingImage,
+  requestMainImageUpload,
+  updateMainImageOrder,
+  removeListingMainImage,
+  requestOtherImageUpload,
+  updateOtherImageOrder,
+  removeListingOtherImage,
   loadData,
   clearUpdatedTab,
   savePayoutDetails,
@@ -72,12 +79,18 @@ export const EditTeacherPageComponent = props => {
     onPublishListingDraft,
     onUpdateListing,
     onImageUpload,
+    onMainImageUpload,
+    onOtherImageUpload,
     onRemoveListingImage,
+    onRemoveListingMainImage,
+    onRemoveListingOtherImage,
     onManageDisableScrolling,
     onPayoutDetailsFormSubmit,
     onPayoutDetailsFormChange,
     onGetStripeConnectAccountLink,
     onUpdateImageOrder,
+    onUpdateMainImageOrder,
+    onUpdateOtherImageOrder,
     onChange,
     page,
     params,
@@ -158,7 +171,7 @@ export const EditTeacherPageComponent = props => {
     // Show form if user is posting a new listing or editing existing one
     const disableForm = page.redirectToListing && !showListingsError;
 
-    // Images are passed to EditListingForm so that it can generate thumbnails out of them
+    // Images are passed to EditTeacherForm so that it can generate thumbnails out of them
     const currentListingImages =
       currentListing && currentListing.images ? currentListing.images : [];
 
@@ -170,6 +183,35 @@ export const EditTeacherPageComponent = props => {
     const removedImageIds = page.removedImageIds || [];
     const images = allImages.filter(img => {
       return !removedImageIds.includes(img.id);
+    });
+
+    const { publicData } = currentListing.attributes;
+    // Main images are passed to EditTeacherForm so that it can generate thumbnails out of them
+    const currentMainImage = publicData.isTeacherType ? publicData.mainImage ? displayMainImage(publicData.mainImage, currentListing.images) : [] : currentListing.images;
+    const currentListingMainImage = currentMainImage ? currentMainImage : [];
+
+    // Main images not yet connected to the listing
+    const mainImageOrder = page.mainImageOrder || [];
+    const unattachedMainImages = mainImageOrder.map(i => page.mainImage[i]);
+
+    const allMainImage = currentListingMainImage.concat(unattachedMainImages);
+    const removedMainImageIds = page.removedMainImageIds || [];
+    const mainImage = allMainImage.filter(img => {
+      return !removedMainImageIds.includes(img.id);
+    });
+
+    // Main images are passed to EditTeacherForm so that it can generate thumbnails out of them
+    const currentOtherImage = publicData.isTeacherType ? publicData.mainImage ? displayOtherImage(publicData.mainImage, currentListing.images) : [] : currentListing.images;
+    const currentListingOtherImage = currentOtherImage ? currentOtherImage : [];
+
+    // Other images not yet connected to the listing
+    const otherImageOrder = page.otherImageOrder || [];
+    const unattachedOtherImages = otherImageOrder.map(i => page.otherImage[i]);
+
+    const allOtherImage = currentListingOtherImage.concat(unattachedOtherImages);
+    const removedOtherImageIds = page.removedOtherImageIds || [];
+    const otherImage = allOtherImage.filter(img => {
+      return !removedOtherImageIds.includes(img.id);
     });
 
     const title = isNewListingFlow
@@ -194,6 +236,8 @@ export const EditTeacherPageComponent = props => {
           newListingPublished={newListingPublished}
           history={history}
           images={images}
+          mainImage={mainImage}
+          otherImage={otherImage}
           listing={currentListing}
           availability={{
             calendar: page.availabilityCalendar,
@@ -209,9 +253,19 @@ export const EditTeacherPageComponent = props => {
           onPayoutDetailsSubmit={onPayoutDetailsFormSubmit}
           onGetStripeConnectAccountLink={onGetStripeConnectAccountLink}
           getAccountLinkInProgress={getAccountLinkInProgress}
+
           onImageUpload={onImageUpload}
           onUpdateImageOrder={onUpdateImageOrder}
           onRemoveImage={onRemoveListingImage}
+
+          onMainImageUpload={onMainImageUpload}
+          onUpdateMainImageOrder={onUpdateMainImageOrder}
+          onRemoveMainImage={onRemoveListingMainImage}
+
+          onOtherImageUpload={onOtherImageUpload}
+          onUpdateOtherImageOrder={onUpdateOtherImageOrder}
+          onRemoveOtherImage={onRemoveListingOtherImage}
+
           onChange={onChange}
           currentUser={currentUser}
           onManageDisableScrolling={onManageDisableScrolling}
@@ -273,11 +327,17 @@ EditTeacherPageComponent.propTypes = {
   onCreateListingDraft: func.isRequired,
   onPublishListingDraft: func.isRequired,
   onImageUpload: func.isRequired,
+  onMainImageUpload: func.isRequired,
+  onOtherImageUpload: func.isRequired,
   onManageDisableScrolling: func.isRequired,
   onPayoutDetailsFormChange: func.isRequired,
   onPayoutDetailsFormSubmit: func.isRequired,
   onUpdateImageOrder: func.isRequired,
   onRemoveListingImage: func.isRequired,
+  onUpdateMainImageOrder: func.isRequired,
+  onRemoveListingMainImage: func.isRequired,
+  onUpdateOtherImageOrder: func.isRequired,
+  onRemoveListingOtherImage: func.isRequired,
   onUpdateListing: func.isRequired,
   onChange: func.isRequired,
   page: object.isRequired,
@@ -348,6 +408,8 @@ const mapDispatchToProps = dispatch => ({
   onCreateListingDraft: values => dispatch(requestCreateListingDraft(values)),
   onPublishListingDraft: listingId => dispatch(requestPublishListingDraft(listingId)),
   onImageUpload: data => dispatch(requestImageUpload(data)),
+  onMainImageUpload: data => dispatch(requestMainImageUpload(data)),
+  onOtherImageUpload: data => dispatch(requestOtherImageUpload(data)),
   onManageDisableScrolling: (componentId, disableScrolling) =>
     dispatch(manageDisableScrolling(componentId, disableScrolling)),
   onPayoutDetailsFormChange: () => dispatch(stripeAccountClearError()),
@@ -357,6 +419,10 @@ const mapDispatchToProps = dispatch => ({
   onGetStripeConnectAccountLink: params => dispatch(getStripeConnectAccountLink(params)),
   onUpdateImageOrder: imageOrder => dispatch(updateImageOrder(imageOrder)),
   onRemoveListingImage: imageId => dispatch(removeListingImage(imageId)),
+  onUpdateMainImageOrder: imageOrder => dispatch(updateMainImageOrder(imageOrder)),
+  onRemoveListingMainImage: imageId => dispatch(removeListingMainImage(imageId)),
+  onUpdateOtherImageOrder: imageOrder => dispatch(updateOtherImageOrder(imageOrder)),
+  onRemoveListingOtherImage: imageId => dispatch(removeListingOtherImage(imageId)),
   onChange: () => dispatch(clearUpdatedTab()),
 });
 

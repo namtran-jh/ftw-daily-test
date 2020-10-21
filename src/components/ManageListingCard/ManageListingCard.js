@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { compose } from 'redux';
 import { withRouter } from 'react-router-dom';
 import { FormattedMessage, intlShape, injectIntl } from '../../util/reactIntl';
+import { displayMainImage } from '../../util/displayImage';
 import classNames from 'classnames';
 import routeConfiguration from '../../routeConfiguration';
 import {
@@ -148,8 +149,9 @@ export const ManageListingCardComponent = props => {
   const isPendingApproval = state === LISTING_STATE_PENDING_APPROVAL;
   const isClosed = state === LISTING_STATE_CLOSED;
   const isDraft = state === LISTING_STATE_DRAFT;
+  const mainImage = publicData.isTeacherType ? publicData.mainImage ? displayMainImage(publicData.mainImage, currentListing.images) : [] : currentListing.images;
   const firstImage =
-    currentListing.images && currentListing.images.length > 0 ? currentListing.images[0] : null;
+    mainImage && mainImage.length > 0 ? mainImage[0] : null;
 
   const menuItemClasses = classNames(css.menuItem, {
     [css.menuItemDisabled]: !!actionsInProgressListingId,

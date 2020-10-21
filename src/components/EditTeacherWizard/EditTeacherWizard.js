@@ -23,6 +23,7 @@ import EditTeacherWizardTab, {
   LOCATION,
   PRICING,
   AVAILABILITY,
+  PHOTOS,
 } from './EditTeacherWizardTab';
 import css from './EditTeacherWizard.css';
 
@@ -38,6 +39,7 @@ export const TABS = [
   LOCATION,
   PRICING,
   ...availabilityMaybe,
+  PHOTOS,
 ];
 
 // Tabs are horizontal in small screens
@@ -56,6 +58,8 @@ const tabLabel = (intl, tab) => {
     key = 'EditTeacherWizard.tabLabelPricing';
   } else if (tab === AVAILABILITY) {
     key = 'EditTeacherWizard.tabLabelAvailability';
+  } else if (tab === PHOTOS) {
+    key = 'EditTeacherWizard.tabLabelPhotos';
   }
 
   return intl.formatMessage({ id: key });
@@ -78,6 +82,7 @@ const tabCompleted = (tab, listing) => {
     description,
     publicData,
   } = listing.attributes;
+  const images = listing.images;
 
   switch (tab) {
     case GENERAL:
@@ -88,6 +93,8 @@ const tabCompleted = (tab, listing) => {
       return !!price;
     case AVAILABILITY:
       return !!availabilityPlan;
+    case PHOTOS:
+      return images && images.length > 0 && publicData.mainImage;
     default:
       return false;
   }

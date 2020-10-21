@@ -13,7 +13,8 @@ import {
   EditTeacherGeneralPanel,
   EditTeacherLocationPanel,
   EditTeacherPricingPanel,
-  EditTeacherAvailabilityPanel
+  EditTeacherAvailabilityPanel,
+  EditTeacherPhotosPanel,
 } from '../../components';
 
 import css from './EditTeacherWizard.css';
@@ -22,13 +23,15 @@ export const GENERAL = 'general';
 export const LOCATION = 'location';
 export const PRICING = 'pricing';
 export const AVAILABILITY = 'availability';
+export const PHOTOS = 'photos';
 
 // EditListingWizardTab component supports these tabs
 export const SUPPORTED_TABS = [
   GENERAL,
   LOCATION,
   PRICING,
-  AVAILABILITY
+  AVAILABILITY,
+  PHOTOS
 ];
 
 const pathParamsToNextTab = (params, tab, marketplaceTabs) => {
@@ -71,12 +74,24 @@ const EditTeacherWizardTab = props => {
     fetchInProgress,
     newListingPublished,
     history,
+    images,
+    mainImage,
+    otherImage,
     availability,
     listing,
     handleCreateFlowTabScrolling,
     handlePublishListing,
     onUpdateListing,
     onCreateListingDraft,
+    onImageUpload,
+    onUpdateImageOrder,
+    onRemoveImage,
+    onMainImageUpload,
+    onUpdateMainImageOrder,
+    onRemoveMainImage,
+    onOtherImageUpload,
+    onUpdateOtherImageOrder,
+    onRemoveOtherImage,
     onChange,
     updatedTab,
     updateInProgress,
@@ -201,6 +216,33 @@ const EditTeacherWizardTab = props => {
         />
       );
     }
+    case PHOTOS: {
+      const submitButtonTranslationKey = isNewListingFlow
+        ? 'EditTeacherWizard.saveNewPhotos'
+        : 'EditTeacherWizard.saveEditPhotos';
+
+      return (
+        <EditTeacherPhotosPanel
+          {...panelProps(PHOTOS)}
+          submitButtonText={intl.formatMessage({ id: submitButtonTranslationKey })}
+          images={images}
+          mainImage={mainImage}
+          otherImage={otherImage}
+          onImageUpload={onImageUpload}
+          onRemoveImage={onRemoveImage}
+          onMainImageUpload={onMainImageUpload}
+          onRemoveMainImage={onRemoveMainImage}
+          onOtherImageUpload={onOtherImageUpload}
+          onRemoveOtherImage={onRemoveOtherImage}
+          onSubmit={values => {
+            onCompleteEditListingWizardTab(tab, values);
+          }}
+          onUpdateImageOrder={onUpdateImageOrder}
+          onUpdateMainImageOrder={onUpdateMainImageOrder}
+          onUpdateOtherImageOrder={onUpdateOtherImageOrder}
+        />
+      );
+    }
     default:
       return null;
   }
@@ -233,6 +275,9 @@ EditTeacherWizardTab.propTypes = {
     push: func.isRequired,
     replace: func.isRequired,
   }).isRequired,
+  images: array.isRequired,
+  mainImage: array.isRequired,
+  otherImage: array.isRequired,
   availability: object.isRequired,
 
   // We cannot use propTypes.listing since the listing might be a draft.
@@ -251,6 +296,19 @@ EditTeacherWizardTab.propTypes = {
   handlePublishListing: func.isRequired,
   onUpdateListing: func.isRequired,
   onCreateListingDraft: func.isRequired,
+
+  onImageUpload: func.isRequired,
+  onUpdateImageOrder: func.isRequired,
+  onRemoveImage: func.isRequired,
+
+  onMainImageUpload: func.isRequired,
+  onUpdateMainImageOrder: func.isRequired,
+  onRemoveMainImage: func.isRequired,
+
+  onOtherImageUpload: func.isRequired,
+  onUpdateOtherImageOrder: func.isRequired,
+  onRemoveOtherImage: func.isRequired,
+
   onChange: func.isRequired,
   updatedTab: string,
   updateInProgress: bool.isRequired,

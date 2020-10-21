@@ -13,13 +13,20 @@ const KEY_CODE_RIGHT_ARROW = 39;
 class ImageCarousel extends Component {
   constructor(props) {
     super(props);
-    this.state = { selectedImageIndex: 0, selectedImageLoaded: false };
+    this.state = {
+      selectedImageIndex: 0,
+      selectedImageLoaded: false
+    };
     this.onKeyUp = this.onKeyUp.bind(this);
     this.prev = this.prev.bind(this);
     this.next = this.next.bind(this);
   }
   componentDidMount() {
     window.addEventListener('keyup', this.onKeyUp);
+  }
+  componentDidUpdate(prevProps) {
+    if (prevProps.otherPhotoIndex !== this.props.otherPhotoIndex)
+      this.setState({ selectedImageIndex: this.props.otherPhotoIndex });
   }
   componentWillUnmount() {
     window.removeEventListener('keyup', this.onKeyUp);

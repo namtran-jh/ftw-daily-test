@@ -54,7 +54,7 @@ const ResponsiveImage = props => {
     const noImageMessageText = noImageMessage || <FormattedMessage id="ResponsiveImage.noImage" />;
     /* eslint-disable jsx-a11y/img-redundant-alt */
     return (
-      <div className={noImageClasses}>
+      <div className={noImageClasses} onClick={rest.onClick ? rest.onClick : null}>
         <div className={css.noImageWrapper}>
           <NoImageIcon className={css.noImageIcon} />
           <div className={css.noImageText}>{noImageMessageText}</div>

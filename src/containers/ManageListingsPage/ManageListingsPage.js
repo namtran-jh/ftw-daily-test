@@ -92,8 +92,8 @@ export class ManageListingsPageComponent extends Component {
           />
         </h1>
       ) : (
-        noResults
-      );
+          noResults
+        );
 
     const page = queryParams ? queryParams.page : 1;
     const paginationLinks =
@@ -248,7 +248,6 @@ ManageListingsPage.loadData = (params, search) => {
     perPage: RESULT_PAGE_SIZE,
     include: ['images'],
     'fields.image': ['variants.landscape-crop', 'variants.landscape-crop2x'],
-    'limit.images': 1,
   });
 };
 

@@ -168,6 +168,7 @@ export { default as EditTeacherGeneralPanel } from './EditTeacherGeneralPanel/Ed
 export { default as EditTeacherLocationPanel } from './EditTeacherLocationPanel/EditTeacherLocationPanel';
 export { default as EditTeacherPricingPanel } from './EditTeacherPricingPanel/EditTeacherPricingPanel';
 export { default as EditTeacherAvailabilityPanel } from './EditTeacherAvailabilityPanel/EditTeacherAvailabilityPanel';
+export { default as EditTeacherPhotosPanel } from './EditTeacherPhotosPanel/EditTeacherPhotosPanel';
 export { default as EditListingWizard } from './EditListingWizard/EditListingWizard';
 export { default as EditTeacherWizard } from './EditTeacherWizard/EditTeacherWizard';
 export { default as Footer } from './Footer/Footer';

@@ -69,9 +69,9 @@ export const validFilterParams = (params, filters) => {
 
     return filterParamNames.includes(paramName)
       ? {
-          ...validParams,
-          ...validURLParamForExtendedData(paramName, paramValue, filters),
-        }
+        ...validParams,
+        ...validURLParamForExtendedData(paramName, paramValue, filters),
+      }
       : { ...validParams };
   }, {});
 };
@@ -93,9 +93,9 @@ export const validURLParamsForExtendedData = (params, filters) => {
 
     return filterParamNames.includes(paramName)
       ? {
-          ...validParams,
-          ...validURLParamForExtendedData(paramName, paramValue, filters),
-        }
+        ...validParams,
+        ...validURLParamForExtendedData(paramName, paramValue, filters),
+      }
       : { ...validParams, [paramName]: paramValue };
   }, {});
 };

@@ -147,7 +147,7 @@ export const filters = [
     id: 'subjects',
     label: 'Subjects',
     type: 'SelectMultipleFilter',
-    group: 'secondary',
+    group: 'primary',
     queryParamNames: ['pub_subjects'],
     config: {
       options: [
@@ -157,7 +157,7 @@ export const filters = [
         { key: 'sub_geography', label: 'Geography' },
         { key: 'sub_history', label: 'History' },
         { key: 'sub_biology', label: 'Biology' },
-        { key: 'sub_Literature', label: 'Literature' },
+        { key: 'sub_literature', label: 'Literature' },
       ],
     },
   },
@@ -165,9 +165,10 @@ export const filters = [
     id: 'levels',
     label: 'Teaching levels',
     type: 'SelectMultipleFilter',
-    group: 'secondary',
+    group: 'primary',
     queryParamNames: ['pub_levels'],
     config: {
+      searchMode: 'has_any',
       options: [
         { key: 'lv_beginner', label: 'Beginner' },
         { key: 'lv_intermediate', label: 'Intermediate' },
@@ -191,8 +192,8 @@ export const filters = [
   {
     id: 'numberOfHours',
     label: 'Number of hours',
-    type: 'SelectSingleFilter',
-    group: 'secondary',
+    type: 'SelectMultipleFilter',
+    group: 'primary',
     queryParamNames: ['pub_numberOfHours'],
     config: {
       options: [

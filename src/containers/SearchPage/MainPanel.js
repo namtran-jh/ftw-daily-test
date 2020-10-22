@@ -107,8 +107,8 @@ class MainPanel extends Component {
     const isArray = Array.isArray(queryParamNames);
     return isArray
       ? queryParamNames.reduce((acc, paramName) => {
-          return { ...acc, [paramName]: getInitialValue(paramName) };
-        }, {})
+        return { ...acc, [paramName]: getInitialValue(paramName) };
+      }, {})
       : {};
   }
 
@@ -187,12 +187,12 @@ class MainPanel extends Component {
     const isSecondaryFiltersOpen = !!hasSecondaryFilters && this.state.isSecondaryFiltersOpen;
     const propsForSecondaryFiltersToggle = hasSecondaryFilters
       ? {
-          isSecondaryFiltersOpen: this.state.isSecondaryFiltersOpen,
-          toggleSecondaryFiltersOpen: isOpen => {
-            this.setState({ isSecondaryFiltersOpen: isOpen });
-          },
-          selectedSecondaryFiltersCount,
-        }
+        isSecondaryFiltersOpen: this.state.isSecondaryFiltersOpen,
+        toggleSecondaryFiltersOpen: isOpen => {
+          this.setState({ isSecondaryFiltersOpen: isOpen });
+        },
+        selectedSecondaryFiltersCount,
+      }
       : {};
 
     const hasPaginationInfo = !!pagination && pagination.totalItems != null;
@@ -209,9 +209,9 @@ class MainPanel extends Component {
       const mobileClassesMaybe =
         mode === 'mobile'
           ? {
-              rootClassName: css.sortBy,
-              menuLabelRootClassName: css.sortByMenuLabel,
-            }
+            rootClassName: css.sortBy,
+            menuLabelRootClassName: css.sortByMenuLabel,
+          }
           : {};
       return sortConfig.active ? (
         <SortBy
@@ -310,25 +310,25 @@ class MainPanel extends Component {
             </SearchFiltersSecondary>
           </div>
         ) : (
-          <div
-            className={classNames(css.listings, {
-              [css.newSearchInProgress]: !listingsAreLoaded,
-            })}
-          >
-            {searchListingsError ? (
-              <h2 className={css.error}>
-                <FormattedMessage id="SearchPage.searchError" />
-              </h2>
-            ) : null}
-            <SearchResultsPanel
-              className={css.searchListingsPanel}
-              listings={listings}
-              pagination={listingsAreLoaded ? pagination : null}
-              search={searchParamsForPagination}
-              setActiveListing={onActivateListing}
-            />
-          </div>
-        )}
+            <div
+              className={classNames(css.listings, {
+                [css.newSearchInProgress]: !listingsAreLoaded,
+              })}
+            >
+              {searchListingsError ? (
+                <h2 className={css.error}>
+                  <FormattedMessage id="SearchPage.searchError" />
+                </h2>
+              ) : null}
+              <SearchResultsPanel
+                className={css.searchListingsPanel}
+                listings={listings}
+                pagination={listingsAreLoaded ? pagination : null}
+                search={searchParamsForPagination}
+                setActiveListing={onActivateListing}
+              />
+            </div>
+          )}
       </div>
     );
   }

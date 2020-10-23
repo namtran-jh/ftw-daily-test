@@ -121,8 +121,8 @@
 
   /* ================ LocationAutocompleteInput bottom attribution padding ================ */
 
-  /* Google Maps needs 72px bottom padding to accommodate logo, Mapbox doesn't have one */
-  --locationAutocompleteBottomPadding: 8px;
+  /* Google Maps needs 72px bottom padding to accommodate logo, Mapbox doesn't have one, default setting: 8px */
+  --locationAutocompleteBottomPadding: 72px;
 
   /* ================ Clearfix solution ================ */
 

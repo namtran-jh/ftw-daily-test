@@ -9,8 +9,8 @@ import config from '../../config';
 
 import IconHourGlass from './IconHourGlass';
 import IconCurrentLocation from './IconCurrentLocation';
-import Geocoder, { GeocoderAttribution, CURRENT_LOCATION_ID } from './GeocoderMapbox';
-// import Geocoder, { GeocoderAttribution, CURRENT_LOCATION_ID } from './GeocoderGoogleMaps';
+// import Geocoder, { GeocoderAttribution, CURRENT_LOCATION_ID } from './GeocoderMapbox';
+import Geocoder, { GeocoderAttribution, CURRENT_LOCATION_ID } from './GeocoderGoogleMaps';
 
 import css from './LocationAutocompleteInput.css';
 
@@ -93,8 +93,8 @@ const LocationPredictionsList = props => {
             <FormattedMessage id="LocationAutocompleteInput.currentLocation" />
           </span>
         ) : (
-          geocoder.getPredictionAddress(prediction)
-        )}
+            geocoder.getPredictionAddress(prediction)
+          )}
       </li>
     );
   };
@@ -485,8 +485,8 @@ class LocationAutocompleteInputImpl extends Component {
           {this.state.fetchingPlaceDetails ? (
             <IconSpinner className={css.iconSpinner} />
           ) : (
-            <IconHourGlass />
-          )}
+              <IconHourGlass />
+            )}
         </div>
         <input
           className={inputClass}

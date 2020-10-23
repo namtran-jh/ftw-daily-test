@@ -163,11 +163,13 @@ class MainPanel extends Component {
       onOpenModal,
       onCloseModal,
       onMapIconClick,
+      onChangeDisplayMap,
       pagination,
       searchParamsForPagination,
       showAsModalMaxWidth,
       filterConfig,
       sortConfig,
+      isShowingMap,
     } = this.props;
 
     const primaryFilters = filterConfig.filter(f => f.group === 'primary');
@@ -236,6 +238,7 @@ class MainPanel extends Component {
           resultsCount={totalItems}
           searchInProgress={searchInProgress}
           searchListingsError={searchListingsError}
+          onChangeDisplayMap={onChangeDisplayMap}
           {...propsForSecondaryFiltersToggle}
         >
           {primaryFilters.map(config => {
@@ -326,6 +329,7 @@ class MainPanel extends Component {
                 pagination={listingsAreLoaded ? pagination : null}
                 search={searchParamsForPagination}
                 setActiveListing={onActivateListing}
+                isShowingMap={isShowingMap}
               />
             </div>
           )}
@@ -343,6 +347,7 @@ MainPanel.defaultProps = {
   searchParamsForPagination: {},
   filterConfig: config.custom.filters,
   sortConfig: config.custom.sortConfig,
+  isShowingMap: true
 };
 
 MainPanel.propTypes = {
@@ -364,6 +369,7 @@ MainPanel.propTypes = {
   showAsModalMaxWidth: number.isRequired,
   filterConfig: propTypes.filterConfig,
   sortConfig: propTypes.sortConfig,
+  isShowingMap: bool.isRequired,
 
   history: shape({
     push: func.isRequired,

@@ -9,38 +9,45 @@ const { LatLng, LatLngBounds } = sdkTypes;
 // `predictionPlace` (util.types.place) properties.
 export default [
   {
-    id: 'default-helsinki',
+    id: 'default-hanoi',
     predictionPlace: {
-      address: 'Helsinki, Finland',
-      bounds: new LatLngBounds(new LatLng(60.29783, 25.25448), new LatLng(59.92248, 24.78287)),
+      address: 'Ha Noi, Viet Nam',
+      bounds: new LatLngBounds(new LatLng(21.567, 106.214), new LatLng(20.495, 105.492)),
     },
   },
   {
-    id: 'default-turku',
+    id: 'default-haiphong',
     predictionPlace: {
-      address: 'Turku, Finland',
-      bounds: new LatLngBounds(new LatLng(60.53045, 22.38197), new LatLng(60.33361, 22.06644)),
+      address: 'Hai Phong, Viet Nam',
+      bounds: new LatLngBounds(new LatLng(20.982, 106.762), new LatLng(20.714, 106.581)),
     },
   },
   {
-    id: 'default-tampere',
+    id: 'default-danang',
     predictionPlace: {
-      address: 'Tampere, Finland',
-      bounds: new LatLngBounds(new LatLng(61.83657, 24.11838), new LatLng(61.42728, 23.5422)),
+      address: 'Da Nang, Viet Nam',
+      bounds: new LatLngBounds(new LatLng(16.443, 108.456), new LatLng(15.720, 107.983)),
     },
   },
   {
-    id: 'default-oulu',
+    id: 'default-thanhphohochiminh',
     predictionPlace: {
-      address: 'Oulu, Finland',
-      bounds: new LatLngBounds(new LatLng(65.56434, 26.77069), new LatLng(64.8443, 24.11494)),
+      address: 'Ho Chi Minh City, Viet Nam',
+      bounds: new LatLngBounds(new LatLng(11.086, 106.924), new LatLng(10.335, 106.444)),
     },
   },
   {
-    id: 'default-ruka',
+    id: 'default-cantho',
     predictionPlace: {
-      address: 'Ruka, Finland',
-      bounds: new LatLngBounds(new LatLng(66.16997, 29.16773), new LatLng(66.16095, 29.13572)),
+      address: 'Can Tho, Viet Nam',
+      bounds: new LatLngBounds(new LatLng(10.213, 105.895), new LatLng(9.837, 105.655)),
+    },
+  },
+  {
+    id: 'default-camau',
+    predictionPlace: {
+      address: 'Ca Mau, Viet Nam',
+      bounds: new LatLngBounds(new LatLng(9.492, 105.362), new LatLng(8.813, 104.930)),
     },
   },
 ];

@@ -22,7 +22,13 @@
 .searchOptions {
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
   margin-bottom: 24px;
+}
+
+.searchOptionsFirst {
+  display: flex;
+  flex-direction: row;
 }
 
 .searchResultSummary {
@@ -110,5 +116,30 @@
   &:hover,
   &:focus {
     border: 1px solid var(--marketplaceColorDark);
+  }
+}
+
+.mapIcon {
+  /* Font */
+  @apply --marketplaceTinyFontStyles;
+  font-weight: var(--fontWeightMedium);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* background map image */
+  background-image: url(./images/map_icon216x105.png);
+  background-size: cover;
+
+  border: 1px;
+  border-radius: 3px;
+  width: 72px;
+  height: 100%;
+  padding: 9px 16px;
+  margin: 0;
+
+  &:hover {
+    cursor: pointer;
   }
 }

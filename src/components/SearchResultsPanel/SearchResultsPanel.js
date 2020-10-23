@@ -6,7 +6,7 @@ import { ListingCard, PaginationLinks } from '../../components';
 import css from './SearchResultsPanel.css';
 
 const SearchResultsPanel = props => {
-  const { className, rootClassName, listings, pagination, search, setActiveListing } = props;
+  const { className, rootClassName, listings, pagination, search, setActiveListing, isShowingMap } = props;
   const classes = classNames(rootClassName || css.root, className);
 
   const paginationLinks =
@@ -29,12 +29,16 @@ const SearchResultsPanel = props => {
     `${panelLargeWidth / 3}vw`,
   ].join(', ');
 
+  const classOfListingCard = !isShowingMap
+    ? classNames(css.listingCard, css.listingCardHideMap)
+    : classNames(css.listingCard)
+
   return (
     <div className={classes}>
       <div className={css.listingCards}>
         {listings.map(l => (
           <ListingCard
-            className={css.listingCard}
+            className={classOfListingCard}
             key={l.id.uuid}
             listing={l}
             renderSizes={cardRenderSizes}
@@ -55,6 +59,7 @@ SearchResultsPanel.defaultProps = {
   pagination: null,
   rootClassName: null,
   search: null,
+  isShowingMap: true,
 };
 
 const { array, node, object, string } = PropTypes;

@@ -91,3 +91,22 @@
     padding: 0 36px;
   }
 }
+
+.listingCardHideMap {
+  @media (--viewportLarge) {
+    flex-basis: calc(25% - 24px);
+    margin-right: 24px;
+  }
+}
+
+.listingCardHideMap:nth-of-type(2n) {
+  @media screen and (min-width: 1024px) and (max-width: 1920px) {
+    margin-right: 24px;
+  }
+}
+
+.listingCardHideMap:nth-of-type(4n) {
+  @media (--viewportXLarge) {
+    margin-right: 0;
+  }
+}

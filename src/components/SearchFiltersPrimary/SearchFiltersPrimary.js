@@ -17,6 +17,7 @@ const SearchFiltersPrimaryComponent = props => {
     isSecondaryFiltersOpen,
     toggleSecondaryFiltersOpen,
     selectedSecondaryFiltersCount,
+    onChangeDisplayMap,
   } = props;
 
   const hasNoResult = listingsAreLoaded && resultsCount === 0;
@@ -43,17 +44,22 @@ const SearchFiltersPrimaryComponent = props => {
   return (
     <div className={classes}>
       <div className={css.searchOptions}>
-        {listingsAreLoaded ? (
-          <div className={css.searchResultSummary}>
-            <span className={css.resultsFound}>
-              <FormattedMessage
-                id="SearchFiltersPrimary.foundResults"
-                values={{ count: resultsCount }}
-              />
-            </span>
-          </div>
-        ) : null}
-        {sortByComponent}
+        <div className={css.searchOptionsFirst}>
+          {listingsAreLoaded ? (
+            <div className={css.searchResultSummary}>
+              <span className={css.resultsFound}>
+                <FormattedMessage
+                  id="SearchFiltersPrimary.foundResults"
+                  values={{ count: resultsCount }}
+                />
+              </span>
+            </div>
+          ) : null}
+          {sortByComponent}
+        </div>
+        <div className={css.mapIcon} onClick={onChangeDisplayMap}>
+          <FormattedMessage id="SearchFiltersMobile.openMapView" className={css.mapIconText} />
+        </div>
       </div>
 
       <div className={css.filters}>
@@ -85,6 +91,7 @@ SearchFiltersPrimaryComponent.defaultProps = {
   toggleSecondaryFiltersOpen: null,
   selectedSecondaryFiltersCount: 0,
   sortByComponent: null,
+  onChangeDisplayMap: null,
 };
 
 SearchFiltersPrimaryComponent.propTypes = {
@@ -97,6 +104,7 @@ SearchFiltersPrimaryComponent.propTypes = {
   toggleSecondaryFiltersOpen: func,
   selectedSecondaryFiltersCount: number,
   sortByComponent: node,
+  onChangeDisplayMap: func,
 };
 
 const SearchFiltersPrimary = SearchFiltersPrimaryComponent;

@@ -14,6 +14,26 @@ way to update this template, but currently, we follow a pattern:
 
 ## Upcoming version 2020-XX-XX
 
+## [v6.4.1] 2020-10-20
+
+- [add] Add new Stripe countires Bulgaria, Cyprus, Czech Republic, Malta and Romania to the
+  `StripeConnectAccountForm`. Also reorder BANK_CODE & BRANCH_CODE in UI to more logical order.
+  [#1371](https://github.com/sharetribe/ftw-daily/pull/1371)
+- [fix] Don't pass protected data key through `ConfirmSignupForm` if protected data is empty.
+  [#1370](https://github.com/sharetribe/ftw-daily/pull/1370)
+- [add] Update French translation file (Spanish and German translations have still missing keys).
+  [#1369](https://github.com/sharetribe/ftw-daily/pull/1369)
+- [fix] Pass additional values from `ConfirmSignupForm` forward as user's protected data.
+  [#1368](https://github.com/sharetribe/ftw-daily/pull/1368)
+
+  [v6.4.1]: https://github.com/sharetribe/ftw-daily/compare/v6.4.0...v6.4.1
+
+## [v6.4.0] 2020-10-14
+
+- [add] Add Facebook login as a first step towards supporting social logins and SSO in FTW. This PR
+  introduces new endpoints `createUserWithIdp` and `loginWithIdp` and strategy for logging in with
+  Facebook. See the PR for the more detailed view of the changes.
+  [#1364](https://github.com/sharetribe/ftw-daily/pull/1364)
 - [fix] Fix missing proptype warnings in `TransactionPage` and `TransactionPanel` tests.
   [#1363](https://github.com/sharetribe/ftw-daily/pull/1363)
 - [fix] Improve error handling by passing error details forward instead of creating a new error that
@@ -21,6 +41,8 @@ way to update this template, but currently, we follow a pattern:
   [#1361](https://github.com/sharetribe/ftw-daily/pull/1361)
 - [fix] Remove duplicate page schema from body.
   [#1355](https://github.com/sharetribe/ftw-daily/pull/1355)
+
+  [v6.4.0]: https://github.com/sharetribe/ftw-daily/compare/v6.3.1...v6.4.0
 
 ## [v6.3.1] 2020-08-19
 

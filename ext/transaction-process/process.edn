@@ -8,8 +8,7 @@
   {:name :transition/request-payment
    :actor :actor.role/customer
    :actions
-   [{:name :action/create-booking
-     :config {:observe-availability? true}}
+   [{:name :action/create-pending-booking}
     {:name :action/privileged-set-line-items}
     {:name :action/stripe-create-payment-intent}]
    :to :state/pending-payment
@@ -18,8 +17,7 @@
   {:name :transition/request-payment-after-enquiry
    :actor :actor.role/customer
    :actions
-   [{:name :action/create-booking
-     :config {:observe-availability? true}}
+   [{:name :action/create-pending-booking}
     {:name :action/privileged-set-line-items}
     {:name :action/stripe-create-payment-intent}]
    :from :state/enquiry
@@ -43,6 +41,21 @@
    :actions [{:name :action/stripe-confirm-payment-intent}]
    :from :state/pending-payment
    :to :state/preauthorized}
+
+  {:name :transition/expire-booking-1,
+   :at
+   {:fn/min
+    [{:fn/plus
+      [{:fn/timepoint [:time/first-entered-state :state/preauthorized]}
+       {:fn/period ["P6D"]}]}
+     {:fn/plus
+      [{:fn/timepoint [:time/booking-display-end]} {:fn/period ["P1D"]}]}]},
+   :actions
+   [{:name :action/decline-booking}
+    {:name :action/calculate-full-refund}
+    {:name :action/stripe-refund-payment}],
+   :from :state/preauthorized,
+   :to :state/declined}
 
   {:name :transition/accept
    :actor :actor.role/provider
@@ -78,6 +91,21 @@
    :from :state/preauthorized
    :to :state/customer-full-refund-expired}
 
+  {:name :transition/expire-booking-2,
+   :at
+   {:fn/min
+    [{:fn/plus
+      [{:fn/timepoint [:time/first-entered-state :state/preauthorized]}
+       {:fn/period ["P6D"]}]}
+     {:fn/plus
+      [{:fn/timepoint [:time/booking-display-end]} {:fn/period ["P1D"]}]}]},
+   :actions
+   [{:name :action/decline-booking}
+    {:name :action/calculate-full-refund}
+    {:name :action/stripe-refund-payment}],
+   :from :state/customer-full-refund-expired,
+   :to :state/declined}
+
   {:name :transition/decline-after-expire
    :actor :actor.role/provider
    :actions
@@ -105,7 +133,7 @@
   {:name :transition/reaccept-after-expire
    :at
    {:fn/plus
-      [{:fn/timepoint [:time/first-entered-state :state/accepted]}
+      [{:fn/timepoint [:time/first-entered-state :state/preauthorized]}
        {:fn/period ["PT48H"]}]}
    :from :state/accepted
    :to :state/accepted-after-expire}

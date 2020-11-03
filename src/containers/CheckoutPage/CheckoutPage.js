@@ -67,6 +67,8 @@ const ONETIME_PAYMENT = 'ONETIME_PAYMENT';
 const PAY_AND_SAVE_FOR_LATER_USE = 'PAY_AND_SAVE_FOR_LATER_USE';
 const USE_SAVED_CARD = 'USE_SAVED_CARD';
 
+const PENDING_PERIOD_TIME = 15;
+
 const paymentFlow = (selectedPaymentMethod, saveAfterOnetimePayment) => {
   // Payment mode could be 'replaceCard', but without explicit saveAfterOnetimePayment flag,
   // we'll handle it as one-time payment
@@ -89,7 +91,7 @@ const checkIsPaymentExpired = existingTransaction => {
   return txIsPaymentExpired(existingTransaction)
     ? true
     : txIsPaymentPending(existingTransaction)
-      ? minutesBetween(existingTransaction.attributes.lastTransitionedAt, new Date()) >= 15
+      ? minutesBetween(existingTransaction.attributes.lastTransitionedAt, new Date()) >= PENDING_PERIOD_TIME
       : false;
 };
 
@@ -609,6 +611,7 @@ export class CheckoutPageComponent extends Component {
           booking={txBooking}
           dateType={DATE_TYPE_DATE}
           isTeacherType={currentListing.attributes.publicData.isTeacherType}
+          listingCategory={currentListing.attributes.publicData.listingCategory}
         />
       ) : null;
 

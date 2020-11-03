@@ -60,6 +60,8 @@ import SectionHostMaybe from './SectionHostMaybe';
 import SectionMapMaybe from './SectionMapMaybe';
 import css from './TeacherPage.css';
 
+import { LISTING_CATEGORY_TEACHER } from '../../util/listingCategoryName';
+
 const MIN_LENGTH_FOR_LONG_WORDS_IN_TITLE = 16;
 
 const { UUID } = sdkTypes;
@@ -241,9 +243,10 @@ export class TeacherPageComponent extends Component {
       return <NamedRedirect name="TeacherPage" params={params} search={location.search} />;
     }
 
-    const isTeacherType = currentListing.attributes.publicData.isTeacherType;
+    const { isTeacherType = undefined, listingCategory = undefined } = currentListing.attributes.publicData;
 
-    if (!isTeacherType) {
+    if ((!isTeacherType && listingCategory === undefined) ||
+      (isTeacherType === undefined && listingCategory !== LISTING_CATEGORY_TEACHER)) {
       return <NamedRedirect name="ListingPage" params={params} search={location.search} />;
     }
 

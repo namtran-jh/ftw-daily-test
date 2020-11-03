@@ -38,6 +38,8 @@ export const TRANSITION_DECLINE = 'transition/decline';
 export const TRANSITION_DECLINE_AFTER_EXPIRE = 'transition/decline-after-expire';
 
 // The backend automatically expire the transaction.
+export const TRANSITION_EXPIRE_BOOKING_1 = 'transition/expire-booking-1';
+export const TRANSITION_EXPIRE_BOOKING_2 = 'transition/expire-booking-2';
 export const TRANSITION_EXPIRE_FULL_REFUND_PERIOD = 'transition/expire-full-refund-period';
 
 // Admin can also cancel the transition.
@@ -156,6 +158,7 @@ const stateDescription = {
     [STATE_PAYMENT_EXPIRED]: {},
     [STATE_PREAUTHORIZED]: {
       on: {
+        [TRANSITION_EXPIRE_BOOKING_1]: STATE_DECLINED,
         [TRANSITION_DECLINE]: STATE_DECLINED,
         [TRANSITION_EXPIRE_FULL_REFUND_PERIOD]: STATE_CUSTOMER_FULL_REFUND_EXPIRED,
         [TRANSITION_ACCEPT]: STATE_ACCEPTED,
@@ -167,6 +170,7 @@ const stateDescription = {
       on: {
         [TRANSITION_CUSTOMER_CANCEL_NO_REFUND]: STATE_CANCELED,
         [TRANSITION_ACCEPT_AFTER_EXPIRE]: STATE_ACCEPTED_AFTER_EXPIRE,
+        [TRANSITION_EXPIRE_BOOKING_2]: STATE_DECLINED,
         [TRANSITION_DECLINE_AFTER_EXPIRE]: STATE_DECLINED
       },
     },
@@ -370,6 +374,8 @@ export const isRelevantPastTransition = transition => {
     TRANSITION_CONFIRM_PAYMENT,
     TRANSITION_DECLINE,
     TRANSITION_DECLINE_AFTER_EXPIRE,
+    TRANSITION_EXPIRE_BOOKING_1,
+    TRANSITION_EXPIRE_BOOKING_2,
     TRANSITION_EXPIRE_FULL_REFUND_PERIOD,
     TRANSITION_PAYOUT_PROVIDER_NO_REVIEWS,
     TRANSITION_PAYOUT_PROVIDER_WITH_ALL_REVIEWS,

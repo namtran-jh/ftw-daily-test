@@ -6,7 +6,7 @@ import { FormattedMessage, intlShape, injectIntl } from '../../util/reactIntl';
 import classNames from 'classnames';
 import moment from 'moment';
 import { required, bookingDateRequired, composeValidators } from '../../util/validators';
-// import { START_DATE, END_DATE } from '../../util/dates';
+import { calculateBookingDate } from '../../util/dates';
 import { propTypes } from '../../util/types';
 import config from '../../config';
 import { Form, IconSpinner, PrimaryButton, FieldDateInput, FieldSelect } from '../../components';
@@ -38,17 +38,17 @@ export class BookingDatesFormComponent extends Component {
   // default handleSubmit function.
   handleFormSubmit(e) {
     const startDate = e.bookingDates && e.bookingStartTime
-      ? new Date(new Date(e.bookingDates.date).setHours(Number.parseInt(e.bookingStartTime)))
+      ? calculateBookingDate(e.bookingDates.date, Number.parseInt(e.bookingStartTime))
       : ""
     const endDate = e.bookingDates && e.bookingStartTime
-      ? new Date(new Date(new Date(e.bookingDates.date).setDate(new Date(e.bookingDates.date).getDate() + 1)).setHours(Number.parseInt(e.bookingStartTime) + this.props.units))
+      ? calculateBookingDate(e.bookingDates.date, Number.parseInt(e.bookingStartTime) + 24 + this.props.units)
       : ""
 
     const displayStart = e.bookingDates && e.bookingStartTime
-      ? new Date(new Date(e.bookingDates.date).setHours(Number.parseInt(e.bookingStartTime)))
+      ? calculateBookingDate(e.bookingDates.date, Number.parseInt(e.bookingStartTime))
       : ""
     const displayEnd = e.bookingDates && e.bookingStartTime
-      ? new Date(new Date(e.bookingDates.date).setHours(Number.parseInt(e.bookingStartTime) + this.props.units))
+      ? calculateBookingDate(e.bookingDates.date, Number.parseInt(e.bookingStartTime) + this.props.units)
       : ""
 
     if (!startDate || !endDate) {
@@ -74,17 +74,17 @@ export class BookingDatesFormComponent extends Component {
       ? formValues.values.bookingStartTime : "";
 
     const startDate = date && time
-      ? new Date(new Date(date).setHours(Number.parseInt(time)))
+      ? calculateBookingDate(date, Number.parseInt(time))
       : "";
     const endDate = date && time
-      ? new Date(new Date(new Date(date).setDate(new Date(date).getDate() + 1)).setHours(Number.parseInt(time) + units))
+      ? calculateBookingDate(date, Number.parseInt(time) + 24 + units)
       : "";
 
     const displayStart = date && time
-      ? new Date(new Date(date).setHours(Number.parseInt(time)))
+      ? calculateBookingDate(date, Number.parseInt(time))
       : "";
     const displayEnd = date && time
-      ? new Date(new Date(date).setHours(Number.parseInt(time) + units))
+      ? calculateBookingDate(date, Number.parseInt(time) + units)
       : "";
 
     if (startDate && endDate && !this.props.fetchLineItemsInProgress) {
@@ -136,6 +136,7 @@ export class BookingDatesFormComponent extends Component {
             unitType,
             units,
             isTeacherType,
+            listingCategory,
             values,
             timeSlots,
             fetchTimeSlotsError,
@@ -146,17 +147,17 @@ export class BookingDatesFormComponent extends Component {
           // const { startDate, endDate } = values && values.bookingDates ? values.bookingDates : {};
 
           const startDate = values && values.bookingDates && values.bookingDates.date && values.bookingStartTime
-            ? new Date(new Date(values.bookingDates.date).setHours(Number.parseInt(values.bookingStartTime)))
+            ? calculateBookingDate(values.bookingDates.date, Number.parseInt(values.bookingStartTime))
             : "";
           const endDate = values && values.bookingDates && values.bookingDates.date && values.bookingStartTime
-            ? new Date(new Date(new Date(values.bookingDates.date).setDate(new Date(values.bookingDates.date).getDate() + 1)).setHours(Number.parseInt(values.bookingStartTime) + units))
+            ? calculateBookingDate(values.bookingDates.date, Number.parseInt(values.bookingStartTime) + 24 + units)
             : "";
 
           const displayStart = values && values.bookingDates && values.bookingDates.date && values.bookingStartTime
-            ? new Date(new Date(values.bookingDates.date).setHours(Number.parseInt(values.bookingStartTime)))
+            ? calculateBookingDate(values.bookingDates.date, Number.parseInt(values.bookingStartTime))
             : "";
           const displayEnd = values && values.bookingDates && values.bookingDates.date && values.bookingStartTime
-            ? new Date(new Date(values.bookingDates.date).setHours(Number.parseInt(values.bookingStartTime) + units))
+            ? calculateBookingDate(values.bookingDates.date, Number.parseInt(values.bookingStartTime) + units)
             : "";
 
           const bookingTimesOptions = BookingTimes.slice(0, BookingTimes.length - units);
@@ -214,7 +215,12 @@ export class BookingDatesFormComponent extends Component {
               <h3 className={css.priceBreakdownTitle}>
                 <FormattedMessage id="BookingDatesForm.priceBreakdownTitle" />
               </h3>
-              <EstimatedBreakdownMaybe isTeacherType={isTeacherType} bookingData={bookingData} lineItems={lineItems} />
+              <EstimatedBreakdownMaybe
+                isTeacherType={isTeacherType}
+                listingCategory={listingCategory}
+                bookingData={bookingData}
+                lineItems={lineItems}
+              />
             </div>
           ) : null;
 

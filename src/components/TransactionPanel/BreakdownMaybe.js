@@ -11,7 +11,17 @@ const BreakdownMaybe = props => {
   const { className, rootClassName, breakdownClassName, transaction, transactionRole } = props;
   const loaded = transaction && transaction.id && transaction.booking && transaction.booking.id;
 
-  const isTeacherType = transaction && transaction.listing && transaction.listing.attributes && transaction.listing.attributes.publicData && transaction.listing.attributes.publicData.isTeacherType;
+  const isTeacherType = transaction
+    && transaction.listing
+    && transaction.listing.attributes
+    && transaction.listing.attributes.publicData
+    && transaction.listing.attributes.publicData.isTeacherType;
+
+  const listingCategory = transaction
+    && transaction.listing
+    && transaction.listing.attributes
+    && transaction.listing.attributes.publicData
+    && transaction.listing.attributes.publicData.listingCategory;
 
   const classes = classNames(rootClassName || css.breakdownMaybe, className);
   const breakdownClasses = classNames(breakdownClassName || css.breakdown);
@@ -26,6 +36,7 @@ const BreakdownMaybe = props => {
         booking={transaction.booking}
         dateType={DATE_TYPE_DATE}
         isTeacherType={isTeacherType}
+        listingCategory={listingCategory}
       />
     </div>
   ) : null;

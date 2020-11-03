@@ -22,6 +22,8 @@ import {
   TRANSITION_CONFIRM_PAYMENT,
   TRANSITION_DECLINE,
   TRANSITION_DECLINE_AFTER_EXPIRE,
+  TRANSITION_EXPIRE_BOOKING_1,
+  TRANSITION_EXPIRE_BOOKING_2,
   TRANSITION_EXPIRE_FULL_REFUND_PERIOD,
   TRANSITION_REVIEW_1_BY_CUSTOMER,
   TRANSITION_REVIEW_1_BY_PROVIDER,
@@ -158,6 +160,18 @@ const resolveTransitionMessage = (
         <FormattedMessage id="ActivityFeed.ownTransitionDecline" />
       ) : (
           <FormattedMessage id="ActivityFeed.transitionDecline" values={{ displayName }} />
+        );
+    case TRANSITION_EXPIRE_BOOKING_1:
+      return txRoleIsProvider(ownRole) ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionExpire" />
+      ) : (
+          <FormattedMessage id="ActivityFeed.transitionExpire" values={{ displayName }} />
+        );
+    case TRANSITION_EXPIRE_BOOKING_2:
+      return txRoleIsProvider(ownRole) ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionExpire" />
+      ) : (
+          <FormattedMessage id="ActivityFeed.transitionExpire" values={{ displayName }} />
         );
     case TRANSITION_EXPIRE_FULL_REFUND_PERIOD:
       return txRoleIsCustomer(ownRole) ? (

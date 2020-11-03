@@ -16,6 +16,7 @@ import {
   createSlug,
 } from '../../util/urlHelpers';
 import { NamedLink } from '../../components';
+import { LISTING_CATEGORY_TEACHER } from '../../util/listingCategoryName'
 
 import css from './ListingLink.css';
 
@@ -47,7 +48,7 @@ const ListingLink = props => {
       ? LISTING_PAGE_DRAFT_VARIANT
       : null;
   const linkProps = !!variant
-    ? publicData.isTeacherType
+    ? publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
       ? {
         name: 'TeacherPageVariant',
         params: {
@@ -64,7 +65,7 @@ const ListingLink = props => {
           variant,
         },
       }
-    : publicData.isTeacherType
+    : publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
       ? {
         name: 'TeacherPage',
         params: { id, slug },

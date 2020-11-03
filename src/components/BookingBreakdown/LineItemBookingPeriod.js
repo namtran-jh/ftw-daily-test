@@ -1,8 +1,6 @@
 import React from 'react';
 import { FormattedMessage, FormattedDate } from '../../util/reactIntl';
-import moment from 'moment';
-import { LINE_ITEM_NIGHT, LINE_ITEM_UNITS, DATE_TYPE_DATE, propTypes } from '../../util/types';
-// import { dateFromAPIToLocalNoon } from '../../util/dates';
+import { DATE_TYPE_DATE, propTypes } from '../../util/types';
 
 import css from './BookingBreakdown.css';
 
@@ -62,7 +60,7 @@ const BookingPeriod = props => {
 };
 
 const LineItemBookingPeriod = props => {
-  const { booking, unitType, dateType } = props;
+  const { booking, dateType } = props;
 
   // Attributes: displayStart and displayEnd can be used to differentiate shown time range
   // from actual start and end times used for availability reservation. It can help in situations
@@ -70,12 +68,8 @@ const LineItemBookingPeriod = props => {
   // Read more: https://www.sharetribe.com/api-reference/marketplace.html#bookings
   const { start, end, displayStart, displayEnd } = booking.attributes;
   const localStartDate = displayStart || start;
-  const localEndDateRaw = displayEnd || end;
 
-  const isNightly = unitType === LINE_ITEM_NIGHT;
-  const isUnit = unitType === LINE_ITEM_UNITS;
-
-  const endDay = isUnit || isNightly ? localEndDateRaw : moment(localEndDateRaw).subtract(1, 'days');
+  const endDay = displayEnd || end;
 
   return (
     <>

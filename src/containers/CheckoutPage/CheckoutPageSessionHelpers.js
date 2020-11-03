@@ -32,6 +32,8 @@ export const isValidBookingDates = bookingDates => {
   const props = {
     bookingStart: d => d instanceof Date,
     bookingEnd: d => d instanceof Date,
+    bookingDisplayStart: d => d instanceof Date,
+    bookingDisplayEnd: d => d instanceof Date,
   };
   return validateProperties(bookingDates, props);
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import { FormattedMessage } from '../../util/reactIntl';
 import classNames from 'classnames';
 import { SecondaryButton } from '../../components';
+import { bool, func } from 'prop-types';
 
 import css from './TransactionPanel.css';
 
@@ -44,5 +45,20 @@ const CancelActionButtonsMaybe = props => {
     </div>
   ) : null;
 };
+
+CancelActionButtonsMaybe.defaultProps = {
+  showButtons: true,
+  cancelInProgress: null,
+  cancelSaleError: null,
+  onCancelSale: null,
+};
+
+CancelActionButtonsMaybe.propTypes = {
+  showButtons: bool.isRequired,
+  cancelInProgress: bool,
+  cancelSaleError: bool,
+  onCancelSale: func,
+};
+
 
 export default CancelActionButtonsMaybe;

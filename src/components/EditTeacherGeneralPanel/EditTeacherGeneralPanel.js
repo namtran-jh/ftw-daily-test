@@ -48,14 +48,31 @@ const EditTeacherGeneralPanel = props => {
       <h1 className={css.title}>{panelTitle}</h1>
       <EditTeacherGeneralForm
         className={css.form}
-        initialValues={{ title, description, subjects: publicData.subjects, levels: publicData.levels, hours: publicData.hours, numberOfHours: publicData.numberOfHours, isTeacherType: publicData.isTeacherType }}
+        initialValues={{
+          title,
+          description,
+          subjects: publicData.subjects,
+          levels: publicData.levels,
+          hours: publicData.hours,
+          numberOfHours: publicData.numberOfHours,
+          listingCategory: publicData.listingCategory
+        }}
         saveActionMsg={submitButtonText}
         onSubmit={values => {
-          const { title, description, subjects = [], levels = [], hours, numberOfHours, isTeacherType = true } = values;
+          const {
+            title,
+            description,
+            subjects = [],
+            levels = [],
+            hours,
+            numberOfHours,
+            listingCategory = "Teacher"
+          } = values;
+
           const updateValues = {
             title: title.trim(),
             description,
-            publicData: { subjects, levels, hours, numberOfHours, isTeacherType },
+            publicData: { subjects, levels, hours, numberOfHours, listingCategory },
           };
 
           onSubmit(updateValues);

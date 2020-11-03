@@ -93,7 +93,7 @@ exports.getSdk = (req, res) => {
   });
 };
 
-exports.getIntergrationSdk = (req, res) => {
+exports.getIntergrationSdk = () => {
   return integrationSdk.createInstance({
     clientId: process.env.FLEX_INTEGRATION_CLIENT_ID,
     clientSecret: process.env.FLEX_INTEGRATION_CLIENT_SECRET,

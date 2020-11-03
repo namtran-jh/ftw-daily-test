@@ -15,12 +15,6 @@ import {
   TRANSITION_DECLINE,
   TRANSITION_DECLINE_AFTER_EXPIRE,
   TRANSITION_EXPIRE_FULL_REFUND_PERIOD,
-  TRANSITION_CUSTOMER_CANCEL,
-  TRANSITION_CUSTOMER_CANCEL_NO_REFUND,
-  TRANSITION_CUSTOMER_CANCEL_BEFORE_EXPIRE,
-  TRANSITION_PROVIDER_CANCEL_BEFORE_EXPIRE,
-  TRANSITION_CUSTOMER_CANCEL_AFTER_EXPIRE,
-  TRANSITION_PROVIDER_CANCEL_AFTER_EXPIRE,
 } from '../../util/transaction';
 import { transactionLineItems } from '../../util/api';
 import * as log from '../../util/log';
@@ -30,7 +24,7 @@ import {
   denormalisedResponseEntities,
 } from '../../util/data';
 import { addMarketplaceEntities } from '../../ducks/marketplaceData.duck';
-import { fetchCurrentUserNotifications, fetchExpireCurrentUserNotifications } from '../../ducks/user.duck';
+import { fetchCurrentUserNotifications } from '../../ducks/user.duck';
 
 const { UUID } = sdkTypes;
 
@@ -437,23 +431,18 @@ export const declineSale = id => async (dispatch, getState, sdk) => {
     });
 };
 
-export const cancelSale = id => async (dispatch, getState, sdk) => {
+export const cancelSale = (id, transType) => async (dispatch, getState, sdk) => {
   if (cancelOrInProgress(getState())) {
     return Promise.reject(new Error('Cancel already in progress'));
   }
   dispatch(cancelSaleRequest());
-
-  const currentTransactions = await sdk.transactions.show({ id });
-  const transType = currentTransactions.data.data.attributes.lastTransition === TRANSITION_EXPIRE_FULL_REFUND_PERIOD
-    ? TRANSITION_CUSTOMER_CANCEL_NO_REFUND
-    : TRANSITION_CUSTOMER_CANCEL;
 
   return sdk.transactions
     .transition({ id, transition: transType, params: {} }, { expand: true })
     .then(response => {
       dispatch(addMarketplaceEntities(response));
       dispatch(cancelSaleSuccess());
-      dispatch(fetchExpireCurrentUserNotifications());
+      dispatch(fetchCurrentUserNotifications());
       return response;
     })
     .catch(e => {
@@ -465,65 +454,6 @@ export const cancelSale = id => async (dispatch, getState, sdk) => {
       throw e;
     });
 };
-
-export const cancelSaleAfterAcceptedByCustomer = id => async (dispatch, getState, sdk) => {
-  if (cancelOrInProgress(getState())) {
-    return Promise.reject(new Error('Cancel already in progress'));
-  }
-  dispatch(cancelSaleRequest());
-
-  const currentTransactions = await sdk.transactions.show({ id });
-  const transType = currentTransactions.data.data.attributes.lastTransition === TRANSITION_ACCEPT
-    ? TRANSITION_CUSTOMER_CANCEL_BEFORE_EXPIRE
-    : TRANSITION_CUSTOMER_CANCEL_AFTER_EXPIRE;
-
-  return sdk.transactions
-    .transition({ id, transition: transType, params: {} }, { expand: true })
-    .then(response => {
-      dispatch(addMarketplaceEntities(response));
-      dispatch(cancelSaleSuccess());
-      dispatch(fetchExpireCurrentUserNotifications());
-      return response;
-    })
-    .catch(e => {
-      dispatch(cancelSaleError(storableError(e)));
-      log.error(e, 'customer-cancel-sale-failed', {
-        txId: id,
-        transition: transType,
-      });
-      throw e;
-    });
-};
-
-export const cancelSaleAfterAcceptedByProvider = id => async (dispatch, getState, sdk) => {
-  if (cancelOrInProgress(getState())) {
-    return Promise.reject(new Error('Cancel already in progress'));
-  }
-  dispatch(cancelSaleRequest());
-
-  const currentTransactions = await sdk.transactions.show({ id });
-  const transType = currentTransactions.data.data.attributes.lastTransition === TRANSITION_ACCEPT
-    ? TRANSITION_PROVIDER_CANCEL_BEFORE_EXPIRE
-    : TRANSITION_PROVIDER_CANCEL_AFTER_EXPIRE;
-
-  return sdk.transactions
-    .transition({ id, transition: transType, params: {} }, { expand: true })
-    .then(response => {
-      dispatch(addMarketplaceEntities(response));
-      dispatch(cancelSaleSuccess());
-      dispatch(fetchExpireCurrentUserNotifications());
-      return response;
-    })
-    .catch(e => {
-      dispatch(cancelSaleError(storableError(e)));
-      log.error(e, 'provider-cancel-sale-failed', {
-        txId: id,
-        transition: transType,
-      });
-      throw e;
-    });
-};
-
 
 const fetchMessages = (txId, page) => (dispatch, getState, sdk) => {
   const paging = { page, per_page: MESSAGES_PAGE_SIZE };

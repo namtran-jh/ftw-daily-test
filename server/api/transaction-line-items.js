@@ -1,7 +1,7 @@
 const { transactionLineItems } = require('../api-util/lineItems');
 const { getSdk, getIntergrationSdk, handleError, serialize } = require('../api-util/sdk');
 const { constructValidLineItems } = require('../api-util/lineItemHelpers');
-const { checkIsFirstTimeOfCustomer } = require('../api-util/helper');
+const { isFirstPurchase } = require('../api-util/helper');
 
 module.exports = (req, res) => {
   const { isOwnListing, listingId, bookingData, customerId } = req.body;
@@ -14,9 +14,9 @@ module.exports = (req, res) => {
 
   listingPromise
     .then(async (apiResponse) => {
-      // Calculate fist time of customer booking
       const queryResult = await intergrationSdk.transactions.query({ customerId });
-      const isFirstTime = checkIsFirstTimeOfCustomer(queryResult);
+
+      const isFirstTime = isFirstPurchase(queryResult.data);
 
       const listing = apiResponse.data.data;
       const lineItems = transactionLineItems(listing, bookingData, isFirstTime);

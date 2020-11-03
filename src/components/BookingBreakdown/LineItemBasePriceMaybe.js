@@ -2,14 +2,16 @@ import React from 'react';
 import { FormattedMessage, intlShape } from '../../util/reactIntl';
 import { formatMoney } from '../../util/currency';
 import { LINE_ITEM_NIGHT, LINE_ITEM_DAY, propTypes } from '../../util/types';
+import { LISTING_CATEGORY_TEACHER } from '../../util/listingCategoryName';
 
 import css from './BookingBreakdown.css';
+import { bool, string } from 'prop-types';
 
 const LineItemBasePriceMaybe = props => {
-  const { transaction, unitType, intl, isTeacherType } = props;
+  const { transaction, unitType, intl, isTeacherType, listingCategory } = props;
   const isNightly = unitType === LINE_ITEM_NIGHT;
   const isDaily = unitType === LINE_ITEM_DAY;
-  const translationKey = isTeacherType
+  const translationKey = isTeacherType || listingCategory === LISTING_CATEGORY_TEACHER
     ? 'BookingBreakdown.baseUnitHour'
     : isNightly
       ? 'BookingBreakdown.baseUnitNight'
@@ -43,6 +45,8 @@ LineItemBasePriceMaybe.propTypes = {
   transaction: propTypes.transaction.isRequired,
   unitType: propTypes.bookingUnitType.isRequired,
   intl: intlShape.isRequired,
+  isTeacherType: bool.isRequired,
+  listingCategory: string.isRequired,
 };
 
 export default LineItemBasePriceMaybe;

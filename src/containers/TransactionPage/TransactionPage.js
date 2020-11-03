@@ -30,8 +30,6 @@ import { TopbarContainer } from '../../containers';
 import {
   acceptSale,
   cancelSale,
-  cancelSaleAfterAcceptedByCustomer,
-  cancelSaleAfterAcceptedByProvider,
   declineSale,
   loadData,
   setInitialValues,
@@ -80,8 +78,6 @@ export const TransactionPageComponent = props => {
     onAcceptSale,
     onCancelSale,
     onDeclineSale,
-    onCancelSaleAfterAcceptedByCustomer,
-    onCancelSaleAfterAcceptedByProvider,
     timeSlots,
     fetchTimeSlotsError,
     processTransitions,
@@ -259,8 +255,6 @@ export const TransactionPageComponent = props => {
       acceptSaleError={acceptSaleError}
       cancelSaleError={cancelSaleError}
       declineSaleError={declineSaleError}
-      onCancelSaleAfterAcceptedByCustomer={onCancelSaleAfterAcceptedByCustomer}
-      onCancelSaleAfterAcceptedByProvider={onCancelSaleAfterAcceptedByProvider}
       nextTransitions={processTransitions}
       onSubmitBookingRequest={handleSubmitBookingRequest}
       timeSlots={timeSlots}
@@ -327,8 +321,6 @@ TransactionPageComponent.propTypes = {
   onAcceptSale: func.isRequired,
   onCancelSale: func.isRequired,
   onDeclineSale: func.isRequired,
-  onCancelSaleAfterAcceptedByCustomer: func.isRequired,
-  onCancelSaleAfterAcceptedByProvider: func.isRequired,
   scrollingDisabled: bool.isRequired,
   transaction: propTypes.transaction,
   fetchMessagesError: propTypes.error,
@@ -431,9 +423,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     onAcceptSale: transactionId => dispatch(acceptSale(transactionId)),
-    onCancelSale: transactionId => dispatch(cancelSale(transactionId)),
-    onCancelSaleAfterAcceptedByCustomer: transactionId => dispatch(cancelSaleAfterAcceptedByCustomer(transactionId)),
-    onCancelSaleAfterAcceptedByProvider: transactionId => dispatch(cancelSaleAfterAcceptedByProvider(transactionId)),
+    onCancelSale: (transactionId, transType) => dispatch(cancelSale(transactionId, transType)),
     onDeclineSale: transactionId => dispatch(declineSale(transactionId)),
     onShowMoreMessages: txId => dispatch(fetchMoreMessages(txId)),
     onSendMessage: (txId, message) => dispatch(sendMessage(txId, message)),

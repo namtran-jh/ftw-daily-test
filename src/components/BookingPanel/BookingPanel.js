@@ -11,6 +11,7 @@ import { parse, stringify } from '../../util/urlHelpers';
 import config from '../../config';
 import { ModalInMobile, Button } from '../../components';
 import { BookingDatesForm } from '../../forms';
+import { LISTING_CATEGORY_TEACHER } from '../../util/listingCategoryName'
 
 import css from './BookingPanel.css';
 
@@ -90,7 +91,7 @@ const BookingPanel = props => {
   const isNightly = unitType === LINE_ITEM_NIGHT;
   const isDaily = unitType === LINE_ITEM_DAY;
 
-  const unitTranslationKey = publicData.isTeacherType
+  const unitTranslationKey = publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
     ? 'BookingPanel.perHour'
     : isNightly
       ? 'BookingPanel.perNight'
@@ -132,6 +133,7 @@ const BookingPanel = props => {
             unitType={unitType}
             units={units}
             isTeacherType={publicData.isTeacherType}
+            listingCategory={publicData.listingCategory}
             onSubmit={onSubmit}
             price={price}
             listingId={listing.id}
@@ -191,6 +193,7 @@ BookingPanel.propTypes = {
   className: string,
   titleClassName: string,
   listing: oneOfType([propTypes.listing, propTypes.ownListing]),
+  currentUser: propTypes.currentUser,
   isOwnListing: bool,
   unitType: propTypes.bookingUnitType,
   onSubmit: func.isRequired,

@@ -1,6 +1,6 @@
 const { transactionLineItems } = require('../api-util/lineItems');
 const { getSdk, getIntergrationSdk, getTrustedSdk, handleError, serialize } = require('../api-util/sdk');
-const { checkIsFirstTimeOfCustomer } = require('../api-util/helper');
+const { isFirstPurchase } = require('../api-util/helper');
 
 module.exports = (req, res) => {
   const { isSpeculative, bookingData, bodyParams, queryParams } = req.body;
@@ -22,9 +22,8 @@ module.exports = (req, res) => {
         seats: bodyParams.params.seats
       }
 
-      // Calculate fist time of customer booking
       const queryResult = await intergrationSdk.transactions.query({ customerId: bodyParams.params.customerId });
-      const isFirstTime = checkIsFirstTimeOfCustomer(queryResult);
+      const isFirstTime = isFirstPurchase(queryResult.data);
 
       lineItems = transactionLineItems(listing, fullBookingData, isFirstTime);
 

@@ -63,7 +63,7 @@ const estimatedTotalPrice = lineItems => {
 //
 // We need to use FTW backend to calculate the correct line items through transactionLineItems
 // endpoint so that they can be passed to this estimated transaction.
-const estimatedTransaction = (bookingStart, bookingEnd, bookingDisplayStart, bookingDisplayEnd, lineItems, units, seats, userRole) => {
+const estimatedTransaction = (bookingDates, lineItems, units, seats, userRole) => {
   const now = new Date();
 
   const isCustomer = userRole === 'customer';
@@ -73,21 +73,6 @@ const estimatedTransaction = (bookingStart, bookingEnd, bookingDisplayStart, boo
 
   const payinTotal = estimatedTotalPrice(customerLineItems);
   const payoutTotal = estimatedTotalPrice(providerLineItems);
-  // bookingStart: "Fri Mar 30 2018 12:00:00 GMT-1100 (SST)" aka "Fri Mar 30 2018 23:00:00 GMT+0000 (UTC)"
-  // Server normalizes night/day bookings to start from 00:00 UTC aka "Thu Mar 29 2018 13:00:00 GMT-1100 (SST)"
-  // The result is: local timestamp.subtract(12h).add(timezoneoffset) (in eg. -23 h)
-
-  // local noon -> startOf('day') => 00:00 local => remove timezoneoffset => 00:00 API (UTC)
-  // const serverDayStart = dateFromLocalToAPI(
-  //   moment(bookingStart)
-  //     .startOf('day')
-  //     .toDate()
-  // );
-  // const serverDayEnd = dateFromLocalToAPI(
-  //   moment(bookingEnd)
-  //     .startOf('day')
-  //     .toDate()
-  // );
 
   return {
     id: new UUID('estimated-transaction'),
@@ -111,10 +96,10 @@ const estimatedTransaction = (bookingStart, bookingEnd, bookingDisplayStart, boo
       id: new UUID('estimated-booking'),
       type: 'booking',
       attributes: {
-        start: bookingStart,
-        end: bookingEnd,
-        displayStart: bookingDisplayStart,
-        displayEnd: bookingDisplayEnd,
+        start: bookingDates.startDate,
+        end: bookingDates.endDate,
+        displayStart: bookingDates.displayStart,
+        displayEnd: bookingDates.displayEnd,
         units,
         seats
       },
@@ -124,7 +109,8 @@ const estimatedTransaction = (bookingStart, bookingEnd, bookingDisplayStart, boo
 
 const EstimatedBreakdownMaybe = props => {
   const isTeacherType = props.isTeacherType;
-  const { unitType, startDate, endDate, displayStart, displayEnd, units, seats } = props.bookingData;
+  const listingCategory = props.listingCategory;
+  const { unitType, units, seats, ...bookingDates } = props.bookingData;
   const lineItems = props.lineItems;
 
   // Currently the estimated breakdown is used only on ListingPage where we want to
@@ -132,8 +118,8 @@ const EstimatedBreakdownMaybe = props => {
   const userRole = 'customer';
 
   const tx =
-    startDate && endDate && displayStart && displayEnd && lineItems && units && seats
-      ? estimatedTransaction(startDate, endDate, displayStart, displayEnd, lineItems, units, seats, userRole)
+    bookingDates && lineItems && units && seats
+      ? estimatedTransaction(bookingDates, lineItems, units, seats, userRole)
       : null;
 
   return tx ? (
@@ -142,6 +128,7 @@ const EstimatedBreakdownMaybe = props => {
       userRole={userRole}
       unitType={unitType}
       isTeacherType={isTeacherType}
+      listingCategory={listingCategory}
       transaction={tx}
       booking={tx.booking}
       dateType={DATE_TYPE_DATE}

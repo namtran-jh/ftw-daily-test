@@ -117,7 +117,6 @@ exports.calculateQuantityFromDates = (startDate, endDate, type) => {
  */
 exports.calculateLineTotal = lineItem => {
   const { code, unitPrice, quantity, percentage, seats, units } = lineItem;
-
   if (quantity) {
     return this.calculateTotalPriceFromQuantity(unitPrice, quantity);
   } else if (percentage) {

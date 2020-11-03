@@ -32,16 +32,33 @@ export const TRANSITION_EXPIRE_PAYMENT = 'transition/expire-payment';
 // When the provider accepts or declines a transaction from the
 // SalePage, it is transitioned with the accept or decline transition.
 export const TRANSITION_ACCEPT = 'transition/accept';
+export const TRANSITION_ACCEPT_AFTER_EXPIRE = 'transition/accept-after-expire';
+export const TRANSITION_REACCEPT_AFTER_EXPIRE = 'transition/reaccept-after-expire';
 export const TRANSITION_DECLINE = 'transition/decline';
+export const TRANSITION_DECLINE_AFTER_EXPIRE = 'transition/decline-after-expire';
 
 // The backend automatically expire the transaction.
-export const TRANSITION_EXPIRE = 'transition/expire';
+export const TRANSITION_EXPIRE_FULL_REFUND_PERIOD = 'transition/expire-full-refund-period';
 
 // Admin can also cancel the transition.
-export const TRANSITION_CANCEL = 'transition/cancel';
+export const TRANSITION_CUSTOMER_CANCEL = 'transition/customer-cancel';
+export const TRANSITION_CUSTOMER_CANCEL_NO_REFUND = 'transition/customer-cancel-no-refund';
+export const TRANSITION_CUSTOMER_CANCEL_BEFORE_EXPIRE = 'transition/customer-cancel-before-expire';
+export const TRANSITION_PROVIDER_CANCEL_BEFORE_EXPIRE = 'transition/provider-cancel-before-expire';
+export const TRANSITION_OPERATOR_CANCEL_BEFORE_EXPIRE = 'transition/operator-cancel-before-expire';
+export const TRANSITION_CUSTOMER_CANCEL_AFTER_EXPIRE = 'transition/customer-cancel-after-expire';
+export const TRANSITION_PROVIDER_CANCEL_AFTER_EXPIRE = 'transition/provider-cancel-after-expire';
+export const TRANSITION_OPERATOR_CANCEL_AFTER_EXPIRE = 'transition/operator-cancel-after-expire';
 
 // The backend will mark the transaction completed.
 export const TRANSITION_COMPLETE = 'transition/complete';
+export const TRANSITION_COMPLETE_AFTER_EXPIRE = 'transition/complete-after-expire';
+
+// Payout provider
+export const TRANSITION_PAYOUT_PROVIDER_NO_REVIEWS = 'transition/payout-provider-no-reviews';
+export const TRANSITION_PAYOUT_PROVIDER_WITH_JUST_ONLY_CUSTOMER_REVIEW = 'transition/payout-provider-with-just-only-customer-review';
+export const TRANSITION_PAYOUT_PROVIDER_WITH_JUST_ONLY_PROVIDER_REVIEW = 'transition/payout-provider-with-just-only-provider-review';
+export const TRANSITION_PAYOUT_PROVIDER_WITH_ALL_REVIEWS = 'transition/payout-provider-with-all-reviews';
 
 // Reviews are given through transaction transitions. Review 1 can be
 // by provider or customer, and review 2 will be the other party of
@@ -87,8 +104,10 @@ const STATE_ENQUIRY = 'enquiry';
 const STATE_PENDING_PAYMENT = 'pending-payment';
 const STATE_PAYMENT_EXPIRED = 'payment-expired';
 const STATE_PREAUTHORIZED = 'preauthorized';
+const STATE_CUSTOMER_FULL_REFUND_EXPIRED = 'customer-full-refund-expired';
 const STATE_DECLINED = 'declined';
 const STATE_ACCEPTED = 'accepted';
+const STATE_ACCEPTED_AFTER_EXPIRE = 'accepted-after-expire';
 const STATE_CANCELED = 'canceled';
 const STATE_DELIVERED = 'delivered';
 const STATE_REVIEWED = 'reviewed';
@@ -108,7 +127,7 @@ const stateDescription = {
   // id is defined only to support Xstate format.
   // However if you have multiple transaction processes defined,
   // it is best to keep them in sync with transaction process aliases.
-  id: 'flex-default-process/release-1',
+  id: 'nam-test-process/release-1',
 
   // This 'initial' state is a starting point for new transaction
   initial: STATE_INITIAL,
@@ -138,22 +157,44 @@ const stateDescription = {
     [STATE_PREAUTHORIZED]: {
       on: {
         [TRANSITION_DECLINE]: STATE_DECLINED,
-        [TRANSITION_EXPIRE]: STATE_DECLINED,
+        [TRANSITION_EXPIRE_FULL_REFUND_PERIOD]: STATE_CUSTOMER_FULL_REFUND_EXPIRED,
         [TRANSITION_ACCEPT]: STATE_ACCEPTED,
+        [TRANSITION_CUSTOMER_CANCEL]: STATE_CANCELED
+      },
+    },
+
+    [STATE_CUSTOMER_FULL_REFUND_EXPIRED]: {
+      on: {
+        [TRANSITION_CUSTOMER_CANCEL_NO_REFUND]: STATE_CANCELED,
+        [TRANSITION_ACCEPT_AFTER_EXPIRE]: STATE_ACCEPTED_AFTER_EXPIRE,
+        [TRANSITION_DECLINE_AFTER_EXPIRE]: STATE_DECLINED
       },
     },
 
     [STATE_DECLINED]: {},
     [STATE_ACCEPTED]: {
       on: {
-        [TRANSITION_CANCEL]: STATE_CANCELED,
+        [TRANSITION_OPERATOR_CANCEL_BEFORE_EXPIRE]: STATE_CANCELED,
+        [TRANSITION_PROVIDER_CANCEL_BEFORE_EXPIRE]: STATE_CANCELED,
+        [TRANSITION_CUSTOMER_CANCEL_BEFORE_EXPIRE]: STATE_CANCELED,
+        [TRANSITION_REACCEPT_AFTER_EXPIRE]: STATE_ACCEPTED_AFTER_EXPIRE,
         [TRANSITION_COMPLETE]: STATE_DELIVERED,
       },
+    },
+
+    [STATE_ACCEPTED_AFTER_EXPIRE]: {
+      on: {
+        [TRANSITION_OPERATOR_CANCEL_AFTER_EXPIRE]: STATE_CANCELED,
+        [TRANSITION_PROVIDER_CANCEL_AFTER_EXPIRE]: STATE_CANCELED,
+        [TRANSITION_CUSTOMER_CANCEL_AFTER_EXPIRE]: STATE_CANCELED,
+        [TRANSITION_COMPLETE_AFTER_EXPIRE]: STATE_DELIVERED,
+      }
     },
 
     [STATE_CANCELED]: {},
     [STATE_DELIVERED]: {
       on: {
+        [TRANSITION_PAYOUT_PROVIDER_NO_REVIEWS]: STATE_DELIVERED,
         [TRANSITION_EXPIRE_REVIEW_PERIOD]: STATE_REVIEWED,
         [TRANSITION_REVIEW_1_BY_CUSTOMER]: STATE_REVIEWED_BY_CUSTOMER,
         [TRANSITION_REVIEW_1_BY_PROVIDER]: STATE_REVIEWED_BY_PROVIDER,
@@ -162,17 +203,24 @@ const stateDescription = {
 
     [STATE_REVIEWED_BY_CUSTOMER]: {
       on: {
+        [TRANSITION_PAYOUT_PROVIDER_WITH_JUST_ONLY_CUSTOMER_REVIEW]: STATE_REVIEWED_BY_CUSTOMER,
         [TRANSITION_REVIEW_2_BY_PROVIDER]: STATE_REVIEWED,
         [TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD]: STATE_REVIEWED,
       },
     },
     [STATE_REVIEWED_BY_PROVIDER]: {
       on: {
+        [TRANSITION_PAYOUT_PROVIDER_WITH_JUST_ONLY_PROVIDER_REVIEW]: STATE_REVIEWED_BY_PROVIDER,
         [TRANSITION_REVIEW_2_BY_CUSTOMER]: STATE_REVIEWED,
         [TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD]: STATE_REVIEWED,
       },
     },
-    [STATE_REVIEWED]: { type: 'final' },
+    [STATE_REVIEWED]: {
+      on: {
+        [TRANSITION_PAYOUT_PROVIDER_WITH_ALL_REVIEWS]: STATE_REVIEWED
+      },
+      type: 'final'
+    },
   },
 };
 
@@ -212,6 +260,7 @@ const getTransitionsToState = getTransitionsToStateFn(stateDescription);
 // This is needed to fetch transactions that need response from provider.
 // I.e. transactions which provider needs to accept or decline
 export const transitionsToRequested = getTransitionsToState(STATE_PREAUTHORIZED);
+export const expireTransitionsToRequested = getTransitionsToState(STATE_CUSTOMER_FULL_REFUND_EXPIRED);
 
 /**
  * Helper functions to figure out if transaction is in a specific state.
@@ -234,8 +283,14 @@ export const txIsPaymentExpired = tx =>
 export const txIsRequested = tx =>
   getTransitionsToState(STATE_PREAUTHORIZED).includes(txLastTransition(tx));
 
+export const txIsExpiredFullRefund = tx =>
+  getTransitionsToState(STATE_CUSTOMER_FULL_REFUND_EXPIRED).includes(txLastTransition(tx));
+
 export const txIsAccepted = tx =>
   getTransitionsToState(STATE_ACCEPTED).includes(txLastTransition(tx));
+
+export const txIsAcceptedAfterExpire = tx =>
+  getTransitionsToState(STATE_ACCEPTED_AFTER_EXPIRE).includes(txLastTransition(tx));
 
 export const txIsDeclined = tx =>
   getTransitionsToState(STATE_DECLINED).includes(txLastTransition(tx));
@@ -273,6 +328,7 @@ const hasPassedStateFn = state => tx =>
   getTransitionsToState(state).filter(t => hasPassedTransition(t, tx)).length > 0;
 
 export const txHasBeenAccepted = hasPassedStateFn(STATE_ACCEPTED);
+export const txHasBeenAcceptedAfterExpire = hasPassedStateFn(STATE_ACCEPTED_AFTER_EXPIRE);
 export const txHasBeenDelivered = hasPassedStateFn(STATE_DELIVERED);
 
 /**
@@ -299,11 +355,26 @@ export const getReview2Transition = isCustomer =>
 export const isRelevantPastTransition = transition => {
   return [
     TRANSITION_ACCEPT,
-    TRANSITION_CANCEL,
+    TRANSITION_ACCEPT_AFTER_EXPIRE,
+    TRANSITION_REACCEPT_AFTER_EXPIRE,
+    TRANSITION_CUSTOMER_CANCEL,
+    TRANSITION_CUSTOMER_CANCEL_NO_REFUND,
+    TRANSITION_CUSTOMER_CANCEL_AFTER_EXPIRE,
+    TRANSITION_PROVIDER_CANCEL_AFTER_EXPIRE,
+    TRANSITION_OPERATOR_CANCEL_AFTER_EXPIRE,
+    TRANSITION_CUSTOMER_CANCEL_BEFORE_EXPIRE,
+    TRANSITION_PROVIDER_CANCEL_BEFORE_EXPIRE,
+    TRANSITION_OPERATOR_CANCEL_BEFORE_EXPIRE,
     TRANSITION_COMPLETE,
+    TRANSITION_COMPLETE_AFTER_EXPIRE,
     TRANSITION_CONFIRM_PAYMENT,
     TRANSITION_DECLINE,
-    TRANSITION_EXPIRE,
+    TRANSITION_DECLINE_AFTER_EXPIRE,
+    TRANSITION_EXPIRE_FULL_REFUND_PERIOD,
+    TRANSITION_PAYOUT_PROVIDER_NO_REVIEWS,
+    TRANSITION_PAYOUT_PROVIDER_WITH_ALL_REVIEWS,
+    TRANSITION_PAYOUT_PROVIDER_WITH_JUST_ONLY_CUSTOMER_REVIEW,
+    TRANSITION_PAYOUT_PROVIDER_WITH_JUST_ONLY_PROVIDER_REVIEW,
     TRANSITION_REVIEW_1_BY_CUSTOMER,
     TRANSITION_REVIEW_1_BY_PROVIDER,
     TRANSITION_REVIEW_2_BY_CUSTOMER,
@@ -343,7 +414,10 @@ export const txRoleIsCustomer = userRole => userRole === TX_TRANSITION_ACTOR_CUS
 // should go through the local API endpoints, or if using JS SDK is
 // enough.
 export const isPrivileged = transition => {
-  return [TRANSITION_REQUEST_PAYMENT, TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY].includes(
+  return [
+    TRANSITION_REQUEST_PAYMENT,
+    TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY
+  ].includes(
     transition
   );
 };

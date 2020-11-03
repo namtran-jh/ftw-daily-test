@@ -2,10 +2,8 @@ import Decimal from 'decimal.js';
 import { types as sdkTypes } from '../../util/sdkLoader';
 import {
   TRANSITION_ACCEPT,
-  TRANSITION_CANCEL,
   TRANSITION_COMPLETE,
   TRANSITION_DECLINE,
-  TRANSITION_EXPIRE,
   TRANSITION_REQUEST_PAYMENT,
   TRANSITION_CONFIRM_PAYMENT,
   TX_TRANSITION_ACTOR_CUSTOMER,
@@ -322,6 +320,7 @@ export const ProviderSaleDeclined = {
   },
 };
 
+/*
 export const ProviderSaleAutoDeclined = {
   component: BookingBreakdown,
   props: {
@@ -356,6 +355,7 @@ export const ProviderSaleAutoDeclined = {
     }),
   },
 };
+*/
 
 export const ProviderSaleDelivered = {
   component: BookingBreakdown,
@@ -392,6 +392,7 @@ export const ProviderSaleDelivered = {
   },
 };
 
+/*
 export const ProviderSaleCanceled = {
   component: BookingBreakdown,
   props: {
@@ -443,6 +444,7 @@ export const ProviderSaleCanceled = {
     }),
   },
 };
+*/
 
 export const SingleDay = {
   component: BookingBreakdown,

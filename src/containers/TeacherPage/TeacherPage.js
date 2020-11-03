@@ -117,6 +117,8 @@ export class TeacherPageComponent extends Component {
       bookingDates: {
         bookingStart: bookingDates.startDate,
         bookingEnd: bookingDates.endDate,
+        bookingDisplayStart: bookingDates.displayStart,
+        bookingDisplayEnd: bookingDates.displayEnd
       },
       confirmPaymentError: null,
     };
@@ -488,6 +490,7 @@ export class TeacherPageComponent extends Component {
                   className={css.bookingPanel}
                   listing={currentListing}
                   isOwnListing={isOwnListing}
+                  currentUser={currentUser}
                   unitType={unitType}
                   onSubmit={handleBookingSubmit}
                   title={bookingTitle}
@@ -624,8 +627,8 @@ const mapDispatchToProps = dispatch => ({
   onManageDisableScrolling: (componentId, disableScrolling) =>
     dispatch(manageDisableScrolling(componentId, disableScrolling)),
   callSetInitialValues: (setInitialValues, values) => dispatch(setInitialValues(values)),
-  onFetchTransactionLineItems: (bookingData, listingId, isOwnListing) =>
-    dispatch(fetchTransactionLineItems(bookingData, listingId, isOwnListing)),
+  onFetchTransactionLineItems: (bookingData, listingId, isOwnListing, customerId) =>
+    dispatch(fetchTransactionLineItems(bookingData, listingId, isOwnListing, customerId)),
   onSendEnquiry: (listingId, message) => dispatch(sendEnquiry(listingId, message)),
   onInitializeCardPaymentData: () => dispatch(initializeCardPaymentData()),
 });

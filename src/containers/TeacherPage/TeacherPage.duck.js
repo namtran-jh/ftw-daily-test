@@ -296,9 +296,10 @@ export const sendEnquiry = (listingId, message) => (dispatch, getState, sdk) => 
     });
 };
 
-export const fetchTransactionLineItems = ({ bookingData, listingId, isOwnListing }) => dispatch => {
+export const fetchTransactionLineItems = ({ bookingData, listingId, isOwnListing, customerId }) => dispatch => {
   dispatch(fetchLineItemsRequest());
-  transactionLineItems({ bookingData, listingId, isOwnListing })
+
+  transactionLineItems({ bookingData, listingId, isOwnListing, customerId })
     .then(response => {
       const lineItems = response.data;
       dispatch(fetchLineItemsSuccess(lineItems));
@@ -308,6 +309,7 @@ export const fetchTransactionLineItems = ({ bookingData, listingId, isOwnListing
       log.error(e, 'fetching-line-items-failed', {
         listingId: listingId.uuid,
         bookingData: bookingData,
+        customerId: customerId,
       });
     });
 };

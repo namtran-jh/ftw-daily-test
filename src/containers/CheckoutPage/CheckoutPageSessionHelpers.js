@@ -72,7 +72,7 @@ export const storeData = (bookingData, bookingDates, listing, transaction, stora
       storedAt: new Date(),
     };
 
-    const replacer = function(k, v) {
+    const replacer = function (k, v) {
       if (this[k] instanceof Date) {
         return { date: v, _serializedType: 'SerializableDate' };
       }

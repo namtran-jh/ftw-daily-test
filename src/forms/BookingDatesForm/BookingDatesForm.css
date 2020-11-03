@@ -5,12 +5,20 @@
   flex-direction: column;
 }
 
-.bookingDates {
+.bookingDate {
+  flex-shrink: 0;
+  margin-bottom: 20px;
+
+  /* Ensure that calendar dropdown gets some stacking context relative to other form items below */
+  z-index: 1;
+}
+
+.bookingTimes {
   flex-shrink: 0;
   margin-bottom: 38px;
 
   /* Ensure that calendar dropdown gets some stacking context relative to other form items below */
-  z-index: 1;
+  /* z-index: 1; */
 }
 
 .priceBreakdownContainer {

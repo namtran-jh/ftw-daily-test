@@ -11,6 +11,8 @@ const BreakdownMaybe = props => {
   const { className, rootClassName, breakdownClassName, transaction, transactionRole } = props;
   const loaded = transaction && transaction.id && transaction.booking && transaction.booking.id;
 
+  const isTeacherType = transaction && transaction.listing && transaction.listing.attributes && transaction.listing.attributes.publicData && transaction.listing.attributes.publicData.isTeacherType;
+
   const classes = classNames(rootClassName || css.breakdownMaybe, className);
   const breakdownClasses = classNames(breakdownClassName || css.breakdown);
 
@@ -23,6 +25,7 @@ const BreakdownMaybe = props => {
         transaction={transaction}
         booking={transaction.booking}
         dateType={DATE_TYPE_DATE}
+        isTeacherType={isTeacherType}
       />
     </div>
   ) : null;

@@ -5,12 +5,14 @@ import classNames from 'classnames';
 import {
   TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY,
   txIsAccepted,
+  txIsAcceptedAfterExpire,
   txIsCanceled,
   txIsDeclined,
   txIsEnquired,
   txIsPaymentExpired,
   txIsPaymentPending,
   txIsRequested,
+  txIsExpiredFullRefund,
   txHasBeenDelivered,
 } from '../../util/transaction';
 import { LINE_ITEM_NIGHT, LINE_ITEM_DAY, propTypes } from '../../util/types';
@@ -39,6 +41,8 @@ import DetailCardHeadingsMaybe from './DetailCardHeadingsMaybe';
 import DetailCardImage from './DetailCardImage';
 import FeedSection from './FeedSection';
 import SaleActionButtonsMaybe from './SaleActionButtonsMaybe';
+import CancelActionButtonsMaybe from './CancelActionButtonsMaybe';
+import CancelActionButtonAfterAcceptedMaybe from './CancelActionButtonAfterAcceptedMaybe';
 import PanelHeading, {
   HEADING_ENQUIRED,
   HEADING_PAYMENT_PENDING,
@@ -182,11 +186,16 @@ export class TransactionPanelComponent extends Component {
       transactionRole,
       intl,
       onAcceptSale,
+      onCancelSale,
       onDeclineSale,
       acceptInProgress,
+      cancelInProgress,
       declineInProgress,
       acceptSaleError,
+      cancelSaleError,
       declineSaleError,
+      onCancelSaleAfterAcceptedByCustomer,
+      onCancelSaleAfterAcceptedByProvider,
       onSubmitBookingRequest,
       timeSlots,
       fetchTimeSlotsError,
@@ -217,11 +226,11 @@ export class TransactionPanelComponent extends Component {
       if (txIsEnquired(tx)) {
         const transitions = Array.isArray(nextTransitions)
           ? nextTransitions.map(transition => {
-              return transition.attributes.name;
-            })
+            return transition.attributes.name;
+          })
           : [];
         const hasCorrectNextTransition =
-          transitions.length > 0 && transitions.includes(TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY);
+          transitions.length > 0 && transitions.includes(TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY)
         return {
           headingState: HEADING_ENQUIRED,
           showBookingPanel: isCustomer && !isProviderBanned && hasCorrectNextTransition,
@@ -241,12 +250,22 @@ export class TransactionPanelComponent extends Component {
           headingState: HEADING_REQUESTED,
           showDetailCardHeadings: isCustomer,
           showSaleButtons: isProvider && !isCustomerBanned,
+          showCancelButtons: isCustomer && !isCustomerBanned,
         };
-      } else if (txIsAccepted(tx)) {
+      } else if (txIsExpiredFullRefund(tx)) {
+        return {
+          headingState: HEADING_REQUESTED,
+          showDetailCardHeadings: isCustomer,
+          showSaleButtons: isProvider && !isCustomerBanned,
+          showCancelButtons: isCustomer && !isCustomerBanned,
+        };
+      } else if (txIsAccepted(tx) || txIsAcceptedAfterExpire(tx)) {
         return {
           headingState: HEADING_ACCEPTED,
           showDetailCardHeadings: isCustomer,
           showAddress: isCustomer,
+          showCancelButtonAfterAccepted: !isCustomerBanned,
+          isCustomerOrProvider: isCustomer,
         };
       } else if (txIsDeclined(tx)) {
         return {
@@ -291,11 +310,13 @@ export class TransactionPanelComponent extends Component {
     const isNightly = unitType === LINE_ITEM_NIGHT;
     const isDaily = unitType === LINE_ITEM_DAY;
 
-    const unitTranslationKey = isNightly
-      ? 'TransactionPanel.perNight'
-      : isDaily
-      ? 'TransactionPanel.perDay'
-      : 'TransactionPanel.perUnit';
+    const unitTranslationKey = publicData.isTeacherType
+      ? 'TransactionPanel.perHour'
+      : isNightly
+        ? 'TransactionPanel.perNight'
+        : isDaily
+          ? 'TransactionPanel.perDay'
+          : 'TransactionPanel.perUnit';
 
     const price = currentListing.attributes.price;
     const bookingSubTitle = price
@@ -316,6 +337,26 @@ export class TransactionPanelComponent extends Component {
         onDeclineSale={() => onDeclineSale(currentTransaction.id)}
       />
     );
+
+    const cancelButtons = (
+      <CancelActionButtonsMaybe
+        showButtons={stateData.showCancelButtons}
+        cancelInProgress={cancelInProgress}
+        cancelSaleError={cancelSaleError}
+        onCancelSale={() => onCancelSale(currentTransaction.id)}
+      />
+    )
+
+    const cancelButtonsAfterAccepted = (
+      <CancelActionButtonAfterAcceptedMaybe
+        showButtons={stateData.showCancelButtonAfterAccepted}
+        isCustomerOrProvider={stateData.isCustomerOrProvider}
+        cancelInProgress={cancelInProgress}
+        cancelSaleError={cancelSaleError}
+        onCancelSaleAfterAcceptedByCustomer={() => onCancelSaleAfterAcceptedByCustomer(currentTransaction.id)}
+        onCancelSaleAfterAcceptedByProvider={() => onCancelSaleAfterAcceptedByProvider(currentTransaction.id)}
+      />
+    )
 
     const showSendMessageForm =
       !isCustomerBanned && !isCustomerDeleted && !isProviderBanned && !isProviderDeleted;
@@ -409,11 +450,17 @@ export class TransactionPanelComponent extends Component {
                 onSubmit={this.onMessageSubmit}
               />
             ) : (
-              <div className={css.sendingMessageNotAllowed}>{sendingMessageNotAllowed}</div>
-            )}
+                <div className={css.sendingMessageNotAllowed}>{sendingMessageNotAllowed}</div>
+              )}
 
             {stateData.showSaleButtons ? (
               <div className={css.mobileActionButtons}>{saleButtons}</div>
+            ) : null}
+            {stateData.showCancelButtons ? (
+              <div className={css.mobileActionButtons}>{cancelButtons}</div>
+            ) : null}
+            {stateData.showCancelButtonAfterAccepted ? (
+              <div className={css.mobileActionButtons}>{cancelButtonsAfterAccepted}</div>
             ) : null}
           </div>
 
@@ -441,6 +488,7 @@ export class TransactionPanelComponent extends Component {
                   titleClassName={css.bookingTitle}
                   isOwnListing={false}
                   listing={currentListing}
+                  currentUser={currentUser}
                   title={listingTitle}
                   subTitle={bookingSubTitle}
                   authorDisplayName={authorDisplayName}
@@ -462,6 +510,12 @@ export class TransactionPanelComponent extends Component {
 
               {stateData.showSaleButtons ? (
                 <div className={css.desktopActionButtons}>{saleButtons}</div>
+              ) : null}
+              {stateData.showCancelButtons ? (
+                <div className={css.desktopActionButtons}>{cancelButtons}</div>
+              ) : null}
+              {stateData.showCancelButtonAfterAccepted ? (
+                <div className={css.desktopActionButtons}>{cancelButtonsAfterAccepted}</div>
               ) : null}
             </div>
           </div>
@@ -526,13 +580,19 @@ TransactionPanelComponent.propTypes = {
   fetchTimeSlotsError: propTypes.error,
   nextTransitions: array,
 
-  // Sale related props
+  // CancelSale related props
   onAcceptSale: func.isRequired,
+  onCancelSale: func.isRequired,
   onDeclineSale: func.isRequired,
   acceptInProgress: bool.isRequired,
+  cancelInProgress: bool.isRequired,
   declineInProgress: bool.isRequired,
   acceptSaleError: propTypes.error,
+  cancelSaleError: propTypes.error,
   declineSaleError: propTypes.error,
+
+  onCancelSaleAfterAcceptedByCustomer: func.isRequired,
+  onCancelSaleAfterAcceptedByProvider: func.isRequired,
 
   // line items
   onFetchTransactionLineItems: func.isRequired,

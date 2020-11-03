@@ -1,6 +1,6 @@
 import { denormalisedResponseEntities, ensureOwnListing } from '../util/data';
 import { storableError } from '../util/errors';
-import { transitionsToRequested } from '../util/transaction';
+import { transitionsToRequested, expireTransitionsToRequested } from '../util/transaction';
 import { LISTING_STATE_DRAFT } from '../util/types';
 import * as log from '../util/log';
 import { authInfo } from './Auth.duck';
@@ -51,8 +51,8 @@ const mergeCurrentUser = (oldCurrentUser, newCurrentUser) => {
   return newCurrentUser === null
     ? null
     : oldCurrentUser === null
-    ? newCurrentUser
-    : { id, type, attributes, ...oldRelationships, ...relationships };
+      ? newCurrentUser
+      : { id, type, attributes, ...oldRelationships, ...relationships };
 };
 
 const initialState = {
@@ -293,6 +293,25 @@ export const fetchCurrentUserNotifications = () => (dispatch, getState, sdk) => 
   const apiQueryParams = {
     only: 'sale',
     last_transitions: transitionsToRequested,
+    page: 1,
+    per_page: NOTIFICATION_PAGE_SIZE,
+  };
+
+  sdk.transactions
+    .query(apiQueryParams)
+    .then(response => {
+      const transactions = response.data.data;
+      dispatch(fetchCurrentUserNotificationsSuccess(transactions));
+    })
+    .catch(e => dispatch(fetchCurrentUserNotificationsError(storableError(e))));
+};
+
+export const fetchExpireCurrentUserNotifications = () => (dispatch, getState, sdk) => {
+  dispatch(fetchCurrentUserNotificationsRequest());
+
+  const apiQueryParams = {
+    only: 'sale',
+    last_transitions: expireTransitionsToRequested,
     page: 1,
     per_page: NOTIFICATION_PAGE_SIZE,
   };

@@ -11,7 +11,16 @@ import {
   getReview2Transition,
   txIsInFirstReviewBy,
   TRANSITION_ACCEPT,
+  TRANSITION_ACCEPT_AFTER_EXPIRE,
   TRANSITION_DECLINE,
+  TRANSITION_DECLINE_AFTER_EXPIRE,
+  TRANSITION_EXPIRE_FULL_REFUND_PERIOD,
+  TRANSITION_CUSTOMER_CANCEL,
+  TRANSITION_CUSTOMER_CANCEL_NO_REFUND,
+  TRANSITION_CUSTOMER_CANCEL_BEFORE_EXPIRE,
+  TRANSITION_PROVIDER_CANCEL_BEFORE_EXPIRE,
+  TRANSITION_CUSTOMER_CANCEL_AFTER_EXPIRE,
+  TRANSITION_PROVIDER_CANCEL_AFTER_EXPIRE,
 } from '../../util/transaction';
 import { transactionLineItems } from '../../util/api';
 import * as log from '../../util/log';
@@ -21,7 +30,7 @@ import {
   denormalisedResponseEntities,
 } from '../../util/data';
 import { addMarketplaceEntities } from '../../ducks/marketplaceData.duck';
-import { fetchCurrentUserNotifications } from '../../ducks/user.duck';
+import { fetchCurrentUserNotifications, fetchExpireCurrentUserNotifications } from '../../ducks/user.duck';
 
 const { UUID } = sdkTypes;
 
@@ -43,6 +52,10 @@ export const FETCH_TRANSITIONS_ERROR = 'app/TransactionPage/FETCH_TRANSITIONS_ER
 export const ACCEPT_SALE_REQUEST = 'app/TransactionPage/ACCEPT_SALE_REQUEST';
 export const ACCEPT_SALE_SUCCESS = 'app/TransactionPage/ACCEPT_SALE_SUCCESS';
 export const ACCEPT_SALE_ERROR = 'app/TransactionPage/ACCEPT_SALE_ERROR';
+
+export const CANCEL_SALE_REQUEST = 'app/TransactionPage/CANCEL_SALE_REQUEST';
+export const CANCEL_SALE_SUCCESS = 'app/TransactionPage/CANCEL_SALE_SUCCESS';
+export const CANCEL_SALE_ERROR = 'app/TransactionPage/CANCEL_SALE_ERROR';
 
 export const DECLINE_SALE_REQUEST = 'app/TransactionPage/DECLINE_SALE_REQUEST';
 export const DECLINE_SALE_SUCCESS = 'app/TransactionPage/DECLINE_SALE_SUCCESS';
@@ -76,6 +89,8 @@ const initialState = {
   transactionRef: null,
   acceptInProgress: false,
   acceptSaleError: null,
+  cancelInProgress: false,
+  cancelSaleError: null,
   declineInProgress: false,
   declineSaleError: null,
   fetchMessagesInProgress: false,
@@ -139,6 +154,13 @@ export default function checkoutPageReducer(state = initialState, action = {}) {
       return { ...state, acceptInProgress: false };
     case ACCEPT_SALE_ERROR:
       return { ...state, acceptInProgress: false, acceptSaleError: payload };
+
+    case CANCEL_SALE_REQUEST:
+      return { ...state, cancelInProgress: true, cancelSaleError: null };
+    case CANCEL_SALE_SUCCESS:
+      return { ...state, cancelInProgress: false };
+    case CANCEL_SALE_ERROR:
+      return { ...state, cancelInProgress: false, cancelSaleError: payload };
 
     case DECLINE_SALE_REQUEST:
       return { ...state, declineInProgress: true, declineSaleError: null, acceptSaleError: null };
@@ -210,6 +232,10 @@ export const acceptOrDeclineInProgress = state => {
   return state.TransactionPage.acceptInProgress || state.TransactionPage.declineInProgress;
 };
 
+export const cancelOrInProgress = state => {
+  return state.TransactionPage.cancelInProgress;
+};
+
 // ================ Action creators ================ //
 export const setInitialValues = initialValues => ({
   type: SET_INITIAL_VALUES,
@@ -233,6 +259,10 @@ const fetchTransitionsError = e => ({ type: FETCH_TRANSITIONS_ERROR, error: true
 const acceptSaleRequest = () => ({ type: ACCEPT_SALE_REQUEST });
 const acceptSaleSuccess = () => ({ type: ACCEPT_SALE_SUCCESS });
 const acceptSaleError = e => ({ type: ACCEPT_SALE_ERROR, error: true, payload: e });
+
+const cancelSaleRequest = () => ({ type: CANCEL_SALE_REQUEST });
+const cancelSaleSuccess = () => ({ type: CANCEL_SALE_SUCCESS });
+const cancelSaleError = e => ({ type: CANCEL_SALE_ERROR, error: true, payload: e });
 
 const declineSaleRequest = () => ({ type: DECLINE_SALE_REQUEST });
 const declineSaleSuccess = () => ({ type: DECLINE_SALE_SUCCESS });
@@ -305,6 +335,7 @@ export const fetchTransaction = (id, txRole) => (dispatch, getState, sdk) => {
       { expand: true }
     )
     .then(response => {
+
       txResponse = response;
       const listingId = listingRelationship(response).id;
       const entities = updatedEntities({}, response.data);
@@ -348,14 +379,19 @@ export const fetchTransaction = (id, txRole) => (dispatch, getState, sdk) => {
     });
 };
 
-export const acceptSale = id => (dispatch, getState, sdk) => {
+export const acceptSale = id => async (dispatch, getState, sdk) => {
   if (acceptOrDeclineInProgress(getState())) {
     return Promise.reject(new Error('Accept or decline already in progress'));
   }
   dispatch(acceptSaleRequest());
 
+  const currentTransactions = await sdk.transactions.show({ id });
+  const transType = currentTransactions.data.data.attributes.lastTransition === TRANSITION_EXPIRE_FULL_REFUND_PERIOD
+    ? TRANSITION_ACCEPT_AFTER_EXPIRE
+    : TRANSITION_ACCEPT;
+
   return sdk.transactions
-    .transition({ id, transition: TRANSITION_ACCEPT, params: {} }, { expand: true })
+    .transition({ id, transition: transType, params: {} }, { expand: true })
     .then(response => {
       dispatch(addMarketplaceEntities(response));
       dispatch(acceptSaleSuccess());
@@ -366,20 +402,25 @@ export const acceptSale = id => (dispatch, getState, sdk) => {
       dispatch(acceptSaleError(storableError(e)));
       log.error(e, 'accept-sale-failed', {
         txId: id,
-        transition: TRANSITION_ACCEPT,
+        transition: transType,
       });
       throw e;
     });
 };
 
-export const declineSale = id => (dispatch, getState, sdk) => {
+export const declineSale = id => async (dispatch, getState, sdk) => {
   if (acceptOrDeclineInProgress(getState())) {
     return Promise.reject(new Error('Accept or decline already in progress'));
   }
   dispatch(declineSaleRequest());
 
+  const currentTransactions = await sdk.transactions.show({ id });
+  const transType = currentTransactions.data.data.attributes.lastTransition === TRANSITION_EXPIRE_FULL_REFUND_PERIOD
+    ? TRANSITION_DECLINE_AFTER_EXPIRE
+    : TRANSITION_DECLINE;
+
   return sdk.transactions
-    .transition({ id, transition: TRANSITION_DECLINE, params: {} }, { expand: true })
+    .transition({ id, transition: transType, params: {} }, { expand: true })
     .then(response => {
       dispatch(addMarketplaceEntities(response));
       dispatch(declineSaleSuccess());
@@ -390,11 +431,99 @@ export const declineSale = id => (dispatch, getState, sdk) => {
       dispatch(declineSaleError(storableError(e)));
       log.error(e, 'reject-sale-failed', {
         txId: id,
-        transition: TRANSITION_DECLINE,
+        transition: transType,
       });
       throw e;
     });
 };
+
+export const cancelSale = id => async (dispatch, getState, sdk) => {
+  if (cancelOrInProgress(getState())) {
+    return Promise.reject(new Error('Cancel already in progress'));
+  }
+  dispatch(cancelSaleRequest());
+
+  const currentTransactions = await sdk.transactions.show({ id });
+  const transType = currentTransactions.data.data.attributes.lastTransition === TRANSITION_EXPIRE_FULL_REFUND_PERIOD
+    ? TRANSITION_CUSTOMER_CANCEL_NO_REFUND
+    : TRANSITION_CUSTOMER_CANCEL;
+
+  return sdk.transactions
+    .transition({ id, transition: transType, params: {} }, { expand: true })
+    .then(response => {
+      dispatch(addMarketplaceEntities(response));
+      dispatch(cancelSaleSuccess());
+      dispatch(fetchExpireCurrentUserNotifications());
+      return response;
+    })
+    .catch(e => {
+      dispatch(cancelSaleError(storableError(e)));
+      log.error(e, 'cancel-sale-failed', {
+        txId: id,
+        transition: transType,
+      });
+      throw e;
+    });
+};
+
+export const cancelSaleAfterAcceptedByCustomer = id => async (dispatch, getState, sdk) => {
+  if (cancelOrInProgress(getState())) {
+    return Promise.reject(new Error('Cancel already in progress'));
+  }
+  dispatch(cancelSaleRequest());
+
+  const currentTransactions = await sdk.transactions.show({ id });
+  const transType = currentTransactions.data.data.attributes.lastTransition === TRANSITION_ACCEPT
+    ? TRANSITION_CUSTOMER_CANCEL_BEFORE_EXPIRE
+    : TRANSITION_CUSTOMER_CANCEL_AFTER_EXPIRE;
+
+  return sdk.transactions
+    .transition({ id, transition: transType, params: {} }, { expand: true })
+    .then(response => {
+      dispatch(addMarketplaceEntities(response));
+      dispatch(cancelSaleSuccess());
+      dispatch(fetchExpireCurrentUserNotifications());
+      return response;
+    })
+    .catch(e => {
+      dispatch(cancelSaleError(storableError(e)));
+      log.error(e, 'customer-cancel-sale-failed', {
+        txId: id,
+        transition: transType,
+      });
+      throw e;
+    });
+};
+
+export const cancelSaleAfterAcceptedByProvider = id => async (dispatch, getState, sdk) => {
+  if (cancelOrInProgress(getState())) {
+    return Promise.reject(new Error('Cancel already in progress'));
+  }
+  dispatch(cancelSaleRequest());
+
+  const currentTransactions = await sdk.transactions.show({ id });
+  const transType = currentTransactions.data.data.attributes.lastTransition === TRANSITION_ACCEPT
+    ? TRANSITION_PROVIDER_CANCEL_BEFORE_EXPIRE
+    : TRANSITION_PROVIDER_CANCEL_AFTER_EXPIRE;
+
+  return sdk.transactions
+    .transition({ id, transition: transType, params: {} }, { expand: true })
+    .then(response => {
+      dispatch(addMarketplaceEntities(response));
+      dispatch(cancelSaleSuccess());
+      dispatch(fetchExpireCurrentUserNotifications());
+      return response;
+    })
+    .catch(e => {
+      dispatch(cancelSaleError(storableError(e)));
+      log.error(e, 'provider-cancel-sale-failed', {
+        txId: id,
+        transition: transType,
+      });
+      throw e;
+    });
+};
+
 
 const fetchMessages = (txId, page) => (dispatch, getState, sdk) => {
   const paging = { page, per_page: MESSAGES_PAGE_SIZE };
@@ -626,9 +755,9 @@ export const fetchNextTransitions = id => (dispatch, getState, sdk) => {
     });
 };
 
-export const fetchTransactionLineItems = ({ bookingData, listingId, isOwnListing }) => dispatch => {
+export const fetchTransactionLineItems = ({ bookingData, listingId, isOwnListing, customerId }) => dispatch => {
   dispatch(fetchLineItemsRequest());
-  transactionLineItems({ bookingData, listingId, isOwnListing })
+  transactionLineItems({ bookingData, listingId, isOwnListing, customerId })
     .then(response => {
       const lineItems = response.data;
       dispatch(fetchLineItemsSuccess(lineItems));
@@ -638,6 +767,7 @@ export const fetchTransactionLineItems = ({ bookingData, listingId, isOwnListing
       log.error(e, 'fetching-line-items-failed', {
         listingId: listingId.uuid,
         bookingData: bookingData,
+        customerId: customerId,
       });
     });
 };

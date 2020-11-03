@@ -1,11 +1,13 @@
-const { calculateQuantityFromDates, calculateTotalFromLineItems } = require('./lineItemHelpers');
+const { calculateTotalFromLineItems } = require('./lineItemHelpers');
 const { types } = require('sharetribe-flex-sdk');
 const { Money } = types;
 
 // This bookingUnitType needs to be one of the following:
 // line-item/night, line-item/day or line-item/units
-const bookingUnitType = 'line-item/night';
-const PROVIDER_COMMISSION_PERCENTAGE = -10;
+const bookingUnitType = 'line-item/units';
+const PROVIDER_COMMISSION_PERCENTAGE = -25;
+const CUSTOMER_COMMISSION_FIRST_REQUEST_PERCENTAGE = 15;
+const CUSTOMER_COMMISSION_PERCENTAGE = 55;
 
 /** Returns collection of lineItems (max 50)
  *
@@ -27,9 +29,9 @@ const PROVIDER_COMMISSION_PERCENTAGE = -10;
  * @param {Object} bookingData
  * @returns {Array} lineItems
  */
-exports.transactionLineItems = (listing, bookingData) => {
+exports.transactionLineItems = (listing, bookingData, isFirstTime) => {
   const unitPrice = listing.attributes.price;
-  const { startDate, endDate } = bookingData;
+  const { units, seats } = bookingData;
 
   /**
    * If you want to use pre-defined component and translations for printing the lineItems base price for booking,
@@ -44,7 +46,8 @@ exports.transactionLineItems = (listing, bookingData) => {
   const booking = {
     code: bookingUnitType,
     unitPrice,
-    quantity: calculateQuantityFromDates(startDate, endDate, bookingUnitType),
+    units,
+    seats,
     includeFor: ['customer', 'provider'],
   };
 
@@ -55,7 +58,16 @@ exports.transactionLineItems = (listing, bookingData) => {
     includeFor: ['provider'],
   };
 
-  const lineItems = [booking, providerCommission];
+  const customerCommission = {
+    code: 'line-item/customer-commission',
+    unitPrice: calculateTotalFromLineItems([booking]),
+    percentage: isFirstTime
+      ? CUSTOMER_COMMISSION_FIRST_REQUEST_PERCENTAGE
+      : CUSTOMER_COMMISSION_PERCENTAGE,
+    includeFor: ['customer'],
+  };
+
+  const lineItems = [booking, providerCommission, customerCommission];
 
   return lineItems;
 };

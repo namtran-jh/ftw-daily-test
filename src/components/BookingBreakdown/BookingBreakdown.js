@@ -32,6 +32,7 @@ export const BookingBreakdownComponent = props => {
     className,
     userRole,
     unitType,
+    isTeacherType,
     transaction,
     booking,
     intl,
@@ -91,7 +92,7 @@ export const BookingBreakdownComponent = props => {
       <LineItemBookingPeriod booking={booking} unitType={unitType} dateType={dateType} />
       <LineItemUnitsMaybe transaction={transaction} unitType={unitType} />
 
-      <LineItemBasePriceMaybe transaction={transaction} unitType={unitType} intl={intl} />
+      <LineItemBasePriceMaybe isTeacherType={isTeacherType} transaction={transaction} unitType={unitType} intl={intl} />
       <LineItemUnknownItemsMaybe transaction={transaction} isProvider={isProvider} intl={intl} />
 
       <LineItemSubTotalMaybe

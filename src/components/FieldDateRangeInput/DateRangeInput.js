@@ -89,8 +89,8 @@ const defaultProps = {
   // navigation related props
   navPrev: <PrevIcon />,
   navNext: <NextIcon />,
-  onPrevMonthClick() {},
-  onNextMonthClick() {},
+  onPrevMonthClick() { },
+  onNextMonthClick() { },
   transitionDuration: 200, // milliseconds between next month changes etc.
 
   renderCalendarDay: undefined, // If undefined, renders react-dates/lib/components/CalendarDay
@@ -110,7 +110,7 @@ const defaultProps = {
       !isInclusivelyBeforeDay(day, moment().add(endOfRange, 'days'))
     );
   },
-  isDayHighlighted: () => {},
+  isDayHighlighted: () => { },
 
   // Internationalization props
   // Multilocale support can be achieved with displayFormat like moment.localeData.longDateFormat('L')

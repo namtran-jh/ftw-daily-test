@@ -3,7 +3,7 @@
  * I.e. dates and other details related to payment decision in receipt format.
  */
 import React from 'react';
-import { oneOf, string } from 'prop-types';
+import { oneOf, string, bool } from 'prop-types';
 import { FormattedMessage, intlShape, injectIntl } from '../../util/reactIntl';
 import classNames from 'classnames';
 import {
@@ -32,6 +32,8 @@ export const BookingBreakdownComponent = props => {
     className,
     userRole,
     unitType,
+    isTeacherType,
+    listingCategory,
     transaction,
     booking,
     intl,
@@ -91,7 +93,13 @@ export const BookingBreakdownComponent = props => {
       <LineItemBookingPeriod booking={booking} unitType={unitType} dateType={dateType} />
       <LineItemUnitsMaybe transaction={transaction} unitType={unitType} />
 
-      <LineItemBasePriceMaybe transaction={transaction} unitType={unitType} intl={intl} />
+      <LineItemBasePriceMaybe
+        isTeacherType={isTeacherType}
+        listingCategory={listingCategory}
+        transaction={transaction}
+        unitType={unitType}
+        intl={intl}
+      />
       <LineItemUnknownItemsMaybe transaction={transaction} isProvider={isProvider} intl={intl} />
 
       <LineItemSubTotalMaybe
@@ -135,12 +143,20 @@ export const BookingBreakdownComponent = props => {
   );
 };
 
-BookingBreakdownComponent.defaultProps = { rootClassName: null, className: null, dateType: null };
+BookingBreakdownComponent.defaultProps = {
+  isTeacherType: false,
+  listingCategory: '',
+  rootClassName: null,
+  className: null,
+  dateType: null
+};
 
 BookingBreakdownComponent.propTypes = {
   rootClassName: string,
   className: string,
 
+  isTeacherType: bool.isRequired,
+  listingCategory: string.isRequired,
   userRole: oneOf(['customer', 'provider']).isRequired,
   unitType: propTypes.bookingUnitType.isRequired,
   transaction: propTypes.transaction.isRequired,

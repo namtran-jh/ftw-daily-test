@@ -6,6 +6,7 @@ import { FormattedMessage, injectIntl, intlShape } from '../../util/reactIntl';
 import classNames from 'classnames';
 import {
   txIsAccepted,
+  txIsAcceptedAfterExpire,
   txIsCanceled,
   txIsDeclined,
   txIsEnquired,
@@ -68,23 +69,23 @@ export const txState = (intl, tx, type) => {
   } else if (txIsRequested(tx)) {
     const requested = isOrder
       ? {
-          nameClassName: css.nameNotEmphasized,
-          bookingClassName: css.bookingNoActionNeeded,
-          lastTransitionedAtClassName: css.lastTransitionedAtEmphasized,
-          stateClassName: css.stateActionNeeded,
-          state: intl.formatMessage({
-            id: 'InboxPage.stateRequested',
-          }),
-        }
+        nameClassName: css.nameNotEmphasized,
+        bookingClassName: css.bookingNoActionNeeded,
+        lastTransitionedAtClassName: css.lastTransitionedAtEmphasized,
+        stateClassName: css.stateActionNeeded,
+        state: intl.formatMessage({
+          id: 'InboxPage.stateRequested',
+        }),
+      }
       : {
-          nameClassName: css.nameEmphasized,
-          bookingClassName: css.bookingActionNeeded,
-          lastTransitionedAtClassName: css.lastTransitionedAtEmphasized,
-          stateClassName: css.stateActionNeeded,
-          state: intl.formatMessage({
-            id: 'InboxPage.statePending',
-          }),
-        };
+        nameClassName: css.nameEmphasized,
+        bookingClassName: css.bookingActionNeeded,
+        lastTransitionedAtClassName: css.lastTransitionedAtEmphasized,
+        stateClassName: css.stateActionNeeded,
+        state: intl.formatMessage({
+          id: 'InboxPage.statePending',
+        }),
+      };
 
     return requested;
   } else if (txIsPaymentPending(tx)) {
@@ -117,7 +118,7 @@ export const txState = (intl, tx, type) => {
         id: 'InboxPage.stateDeclined',
       }),
     };
-  } else if (txIsAccepted(tx)) {
+  } else if (txIsAccepted(tx) || txIsAcceptedAfterExpire(tx)) {
     return {
       nameClassName: css.nameNotEmphasized,
       bookingClassName: css.bookingNoActionNeeded,
@@ -379,10 +380,10 @@ export const InboxPageComponent = props => {
             {!fetchInProgress ? (
               transactions.map(toTxItem)
             ) : (
-              <li className={css.listItemsLoading}>
-                <IconSpinner />
-              </li>
-            )}
+                <li className={css.listItemsLoading}>
+                  <IconSpinner />
+                </li>
+              )}
             {noResults}
           </ul>
           {pagingLinks}

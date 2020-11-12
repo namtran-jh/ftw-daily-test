@@ -18,7 +18,7 @@ import {
   ensureStripeCustomer,
   ensurePaymentMethodCard,
 } from '../../util/data';
-import { dateFromLocalToAPI, minutesBetween } from '../../util/dates';
+import { minutesBetween } from '../../util/dates';
 import { createSlug } from '../../util/urlHelpers';
 import {
   isTransactionInitiateAmountTooLowError,
@@ -67,14 +67,16 @@ const ONETIME_PAYMENT = 'ONETIME_PAYMENT';
 const PAY_AND_SAVE_FOR_LATER_USE = 'PAY_AND_SAVE_FOR_LATER_USE';
 const USE_SAVED_CARD = 'USE_SAVED_CARD';
 
+const PENDING_PERIOD_TIME = 15;
+
 const paymentFlow = (selectedPaymentMethod, saveAfterOnetimePayment) => {
   // Payment mode could be 'replaceCard', but without explicit saveAfterOnetimePayment flag,
   // we'll handle it as one-time payment
   return selectedPaymentMethod === 'defaultCard'
     ? USE_SAVED_CARD
     : saveAfterOnetimePayment
-    ? PAY_AND_SAVE_FOR_LATER_USE
-    : ONETIME_PAYMENT;
+      ? PAY_AND_SAVE_FOR_LATER_USE
+      : ONETIME_PAYMENT;
 };
 
 const initializeOrderPage = (initialValues, routes, dispatch) => {
@@ -89,8 +91,8 @@ const checkIsPaymentExpired = existingTransaction => {
   return txIsPaymentExpired(existingTransaction)
     ? true
     : txIsPaymentPending(existingTransaction)
-    ? minutesBetween(existingTransaction.attributes.lastTransitionedAt, new Date()) >= 15
-    : false;
+      ? minutesBetween(existingTransaction.attributes.lastTransitionedAt, new Date()) >= PENDING_PERIOD_TIME
+      : false;
 };
 
 export class CheckoutPageComponent extends Component {
@@ -134,6 +136,7 @@ export class CheckoutPageComponent extends Component {
    */
   loadInitialData() {
     const {
+      currentUser,
       bookingData,
       bookingDates,
       listing,
@@ -177,17 +180,20 @@ export class CheckoutPageComponent extends Component {
       pageData.bookingDates &&
       pageData.bookingDates.bookingStart &&
       pageData.bookingDates.bookingEnd &&
+      pageData.bookingDates.bookingDisplayStart &&
+      pageData.bookingDates.bookingDisplayEnd &&
       !isBookingCreated;
 
     if (shouldFetchSpeculatedTransaction) {
       const listingId = pageData.listing.id;
       const transactionId = tx ? tx.id : null;
-      const { bookingStart, bookingEnd } = pageData.bookingDates;
+      const { bookingStart, bookingEnd, bookingDisplayStart, bookingDisplayEnd } = pageData.bookingDates;
+      const { units, seats } = pageData.bookingData;
 
       // Convert picked date to date that will be converted on the API as
       // a noon of correct year-month-date combo in UTC
-      const bookingStartForAPI = dateFromLocalToAPI(bookingStart);
-      const bookingEndForAPI = dateFromLocalToAPI(bookingEnd);
+      // const bookingStartForAPI = dateFromLocalToAPI(bookingStart);
+      // const bookingEndForAPI = dateFromLocalToAPI(bookingEnd);
 
       // Fetch speculated transaction for showing price in booking breakdown
       // NOTE: if unit type is line-item/units, quantity needs to be added.
@@ -195,8 +201,13 @@ export class CheckoutPageComponent extends Component {
       fetchSpeculatedTransaction(
         {
           listingId,
-          bookingStart: bookingStartForAPI,
-          bookingEnd: bookingEndForAPI,
+          bookingStart: bookingStart,
+          bookingEnd: bookingEnd,
+          bookingDisplayStart: bookingDisplayStart,
+          bookingDisplayEnd: bookingDisplayEnd,
+          units,
+          seats,
+          customerId: currentUser && currentUser.id && currentUser.id.uuid
         },
         transactionId
       );
@@ -288,11 +299,11 @@ export class CheckoutPageComponent extends Component {
       const paymentParams =
         selectedPaymentFlow !== USE_SAVED_CARD
           ? {
-              payment_method: {
-                billing_details: billingDetails,
-                card: card,
-              },
-            }
+            payment_method: {
+              billing_details: billingDetails,
+              card: card,
+            },
+          }
           : {};
 
       const params = {
@@ -372,13 +383,18 @@ export class CheckoutPageComponent extends Component {
       selectedPaymentFlow === USE_SAVED_CARD && hasDefaultPaymentMethod
         ? { paymentMethod: stripePaymentMethodId }
         : selectedPaymentFlow === PAY_AND_SAVE_FOR_LATER_USE
-        ? { setupPaymentMethodForSaving: true }
-        : {};
+          ? { setupPaymentMethodForSaving: true }
+          : {};
 
     const orderParams = {
       listingId: pageData.listing.id,
       bookingStart: tx.booking.attributes.start,
       bookingEnd: tx.booking.attributes.end,
+      bookingDisplayStart: tx.booking.attributes.displayStart,
+      bookingDisplayEnd: tx.booking.attributes.displayEnd,
+      units: pageData.bookingData.units,
+      seats: pageData.bookingData.seats,
+      customerId: currentUser.id.uuid,
       ...optionalPaymentParams,
     };
 
@@ -411,15 +427,15 @@ export class CheckoutPageComponent extends Component {
     const addressMaybe =
       addressLine1 && postal
         ? {
-            address: {
-              city: city,
-              country: country,
-              line1: addressLine1,
-              line2: addressLine2,
-              postal_code: postal,
-              state: state,
-            },
-          }
+          address: {
+            city: city,
+            country: country,
+            line1: addressLine1,
+            line2: addressLine2,
+            postal_code: postal,
+            state: state,
+          },
+        }
         : {};
     const billingDetails = {
       name,
@@ -561,7 +577,9 @@ export class CheckoutPageComponent extends Component {
     const hasBookingDates = !!(
       bookingDates &&
       bookingDates.bookingStart &&
-      bookingDates.bookingEnd
+      bookingDates.bookingEnd &&
+      bookingDates.bookingDisplayStart &&
+      bookingDates.bookingDisplayEnd
     );
     const hasRequiredData = hasListingAndAuthor && hasBookingDates;
     const canShowPage = hasRequiredData && !isOwnListing;
@@ -592,6 +610,8 @@ export class CheckoutPageComponent extends Component {
           transaction={tx}
           booking={txBooking}
           dateType={DATE_TYPE_DATE}
+          isTeacherType={currentListing.attributes.publicData.isTeacherType}
+          listingCategory={currentListing.attributes.publicData.listingCategory}
         />
       ) : null;
 
@@ -721,8 +741,8 @@ export class CheckoutPageComponent extends Component {
     const unitTranslationKey = isNightly
       ? 'CheckoutPage.perNight'
       : isDaily
-      ? 'CheckoutPage.perDay'
-      : 'CheckoutPage.perUnit';
+        ? 'CheckoutPage.perDay'
+        : 'CheckoutPage.perUnit';
 
     const price = currentListing.attributes.price;
     const formattedPrice = formatMoney(intl, price);
@@ -869,6 +889,8 @@ CheckoutPageComponent.propTypes = {
   bookingDates: shape({
     bookingStart: instanceOf(Date).isRequired,
     bookingEnd: instanceOf(Date).isRequired,
+    bookingDisplayStart: instanceOf(Date).isRequired,
+    bookingDisplayEnd: instanceOf(Date).isRequired,
   }),
   fetchStripeCustomer: func.isRequired,
   stripeCustomerFetched: bool.isRequired,

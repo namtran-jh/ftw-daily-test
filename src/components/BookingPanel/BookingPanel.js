@@ -11,6 +11,7 @@ import { parse, stringify } from '../../util/urlHelpers';
 import config from '../../config';
 import { ModalInMobile, Button } from '../../components';
 import { BookingDatesForm } from '../../forms';
+import { LISTING_CATEGORY_TEACHER } from '../../util/listingCategoryName'
 
 import css from './BookingPanel.css';
 
@@ -54,6 +55,7 @@ const BookingPanel = props => {
     titleClassName,
     listing,
     isOwnListing,
+    currentUser,
     unitType,
     onSubmit,
     title,
@@ -71,6 +73,7 @@ const BookingPanel = props => {
     fetchLineItemsError,
   } = props;
 
+  const { publicData } = listing.attributes;
   const price = listing.attributes.price;
   const hasListingState = !!listing.attributes.state;
   const isClosed = hasListingState && listing.attributes.state === LISTING_STATE_CLOSED;
@@ -82,17 +85,21 @@ const BookingPanel = props => {
   const subTitleText = !!subTitle
     ? subTitle
     : showClosedListingHelpText
-    ? intl.formatMessage({ id: 'BookingPanel.subTitleClosedListing' })
-    : null;
+      ? intl.formatMessage({ id: 'BookingPanel.subTitleClosedListing' })
+      : null;
 
   const isNightly = unitType === LINE_ITEM_NIGHT;
   const isDaily = unitType === LINE_ITEM_DAY;
 
-  const unitTranslationKey = isNightly
-    ? 'BookingPanel.perNight'
-    : isDaily
-    ? 'BookingPanel.perDay'
-    : 'BookingPanel.perUnit';
+  const unitTranslationKey = publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
+    ? 'BookingPanel.perHour'
+    : isNightly
+      ? 'BookingPanel.perNight'
+      : isDaily
+        ? 'BookingPanel.perDay'
+        : 'BookingPanel.perUnit';
+
+  const units = Number.parseInt(publicData.numberOfHours.substr(-1));
 
   const classes = classNames(rootClassName || css.root, className);
   const titleClasses = classNames(titleClassName || css.bookingTitle);
@@ -124,10 +131,14 @@ const BookingPanel = props => {
             formId="BookingPanel"
             submitButtonWrapperClassName={css.bookingDatesSubmitButtonWrapper}
             unitType={unitType}
+            units={units}
+            isTeacherType={publicData.isTeacherType}
+            listingCategory={publicData.listingCategory}
             onSubmit={onSubmit}
             price={price}
             listingId={listing.id}
             isOwnListing={isOwnListing}
+            currentUser={currentUser}
             timeSlots={timeSlots}
             fetchTimeSlotsError={fetchTimeSlotsError}
             onFetchTransactionLineItems={onFetchTransactionLineItems}
@@ -182,6 +193,7 @@ BookingPanel.propTypes = {
   className: string,
   titleClassName: string,
   listing: oneOfType([propTypes.listing, propTypes.ownListing]),
+  currentUser: propTypes.currentUser,
   isOwnListing: bool,
   unitType: propTypes.bookingUnitType,
   onSubmit: func.isRequired,

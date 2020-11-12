@@ -1,19 +1,31 @@
 const { transactionLineItems } = require('../api-util/lineItems');
-const { getSdk, getTrustedSdk, handleError, serialize } = require('../api-util/sdk');
+const { getSdk, getIntergrationSdk, getTrustedSdk, handleError, serialize } = require('../api-util/sdk');
+const { isFirstPurchase } = require('../api-util/helper');
 
 module.exports = (req, res) => {
   const { isSpeculative, bookingData, bodyParams, queryParams } = req.body;
 
-  const { listingId, ...restParams } = bodyParams && bodyParams.params ? bodyParams.params : {};
+  const { listingId, units, seats, ...restParams } = bodyParams && bodyParams.params ? bodyParams.params : {};
 
   const sdk = getSdk(req, res);
+  const intergrationSdk = getIntergrationSdk(req, res);
   let lineItems = null;
 
   sdk.listings
     .show({ id: listingId })
-    .then(listingResponse => {
+    .then(async (listingResponse) => {
       const listing = listingResponse.data.data;
-      lineItems = transactionLineItems(listing, bookingData);
+
+      const fullBookingData = {
+        ...bookingData,
+        units,
+        seats,
+      }
+
+      const queryResult = await intergrationSdk.transactions.query({ customerId: restParams.customerId });
+      const isFirstTime = isFirstPurchase(queryResult.data);
+
+      lineItems = transactionLineItems(listing, fullBookingData, isFirstTime);
 
       return getTrustedSdk(req);
     })

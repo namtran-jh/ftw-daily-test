@@ -35,6 +35,8 @@ import {
   IconSpinner,
   ResponsiveImage,
 } from '../../components';
+import { LISTING_CATEGORY_TEACHER } from '../../util/listingCategoryName'
+
 
 import MenuIcon from './MenuIcon';
 import Overlay from './Overlay';
@@ -66,7 +68,7 @@ const priceData = (price, intl) => {
 const createListingURL = (routes, listing) => {
   const id = listing.id.uuid;
   const slug = createSlug(listing.attributes.title);
-  const { isTeacherType } = listing.attributes.publicData;
+  const { isTeacherType, listingCategory } = listing.attributes.publicData;
   const isPendingApproval = listing.attributes.state === LISTING_STATE_PENDING_APPROVAL;
   const isDraft = listing.attributes.state === LISTING_STATE_DRAFT;
   const variant = isDraft
@@ -77,7 +79,7 @@ const createListingURL = (routes, listing) => {
 
   const linkProps =
     isPendingApproval || isDraft
-      ? isTeacherType
+      ? isTeacherType || listingCategory === LISTING_CATEGORY_TEACHER
         ? {
           name: 'TeacherPageVariant',
           params: {
@@ -94,7 +96,7 @@ const createListingURL = (routes, listing) => {
             variant,
           },
         }
-      : isTeacherType
+      : isTeacherType || listingCategory === LISTING_CATEGORY_TEACHER
         ? {
           name: 'TeacherPage',
           params: { id, slug },
@@ -149,7 +151,11 @@ export const ManageListingCardComponent = props => {
   const isPendingApproval = state === LISTING_STATE_PENDING_APPROVAL;
   const isClosed = state === LISTING_STATE_CLOSED;
   const isDraft = state === LISTING_STATE_DRAFT;
-  const mainImage = publicData.isTeacherType ? publicData.mainImage ? displayMainImage(publicData.mainImage, currentListing.images) : [] : currentListing.images;
+  const mainImage = publicData.isTeacherType
+    ? publicData.mainImage || publicData.listingCategory === LISTING_CATEGORY_TEACHER
+      ? displayMainImage(publicData.mainImage, currentListing.images)
+      : []
+    : currentListing.images;
   const firstImage =
     mainImage && mainImage.length > 0 ? mainImage[0] : null;
 
@@ -176,7 +182,7 @@ export const ManageListingCardComponent = props => {
   const isNightly = unitType === LINE_ITEM_NIGHT;
   const isDaily = unitType === LINE_ITEM_DAY;
 
-  const unitTranslationKey = publicData.isTeacherType
+  const unitTranslationKey = publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
     ? 'ManageListingCard.perHour'
     : isNightly
       ? 'ManageListingCard.perNight'
@@ -256,7 +262,7 @@ export const ManageListingCardComponent = props => {
           </div>
         </div>
         <div className={css.listingType}>
-          {publicData.isTeacherType
+          {publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
             ? (<div className={css.type}> Listing type: TEACHER </div>)
             : (<div className={css.type}> Listing type: SAUNA </div>)}
         </div>
@@ -271,8 +277,20 @@ export const ManageListingCardComponent = props => {
             >
               <NamedLink
                 className={css.finishListingDraftLink}
-                name={publicData.isTeacherType ? "EditTeacherPage" : "EditListingPage"}
-                params={{ id, slug, type: LISTING_PAGE_PARAM_TYPE_DRAFT, tab: publicData.isTeacherType ? "general" : 'description' }}
+                name={publicData.isTeacherType
+                  ? "EditTeacherPage"
+                  : publicData.listingCategory
+                    ? `Edit${publicData.listingCategory}Page`
+                    : "EditListingPage"
+                }
+                params={{
+                  id,
+                  slug,
+                  type: LISTING_PAGE_PARAM_TYPE_DRAFT,
+                  tab: publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
+                    ? "general"
+                    : 'description'
+                }}
               >
                 <FormattedMessage id="ManageListingCard.finishListingDraft" />
               </NamedLink>
@@ -354,8 +372,20 @@ export const ManageListingCardComponent = props => {
         <div className={css.manageLinks}>
           <NamedLink
             className={css.manageLink}
-            name={publicData.isTeacherType ? "EditTeacherPage" : "EditListingPage"}
-            params={{ id, slug, type: editListingLinkType, tab: publicData.isTeacherType ? "general" : 'description' }}
+            name={publicData.isTeacherType
+              ? "EditTeacherPage"
+              : publicData.listingCategory
+                ? `Edit${publicData.listingCategory}Page`
+                : "EditListingPage"
+            }
+            params={{
+              id,
+              slug,
+              type: editListingLinkType,
+              tab: publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
+                ? "general"
+                : 'description'
+            }}
           >
             <FormattedMessage id="ManageListingCard.editListing" />
           </NamedLink>
@@ -366,7 +396,12 @@ export const ManageListingCardComponent = props => {
 
               <NamedLink
                 className={css.manageLink}
-                name={publicData.isTeacherType ? "EditTeacherPage" : "EditListingPage"}
+                name={publicData.isTeacherType
+                  ? "EditTeacherPage"
+                  : publicData.listingCategory
+                    ? `Edit${publicData.listingCategory}Page`
+                    : "EditListingPage"
+                }
                 params={{ id, slug, type: editListingLinkType, tab: 'availability' }}
               >
                 <FormattedMessage id="ManageListingCard.manageAvailability" />

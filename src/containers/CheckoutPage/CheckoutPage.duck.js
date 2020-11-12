@@ -175,19 +175,21 @@ export const initiateOrder = (orderParams, transactionId) => (dispatch, getState
   const bookingData = {
     startDate: orderParams.bookingStart,
     endDate: orderParams.bookingEnd,
+    bookingDisplayStart: orderParams.bookingDisplayStart,
+    bookingDisplayEnd: orderParams.bookingDisplayEnd,
   };
 
   const bodyParams = isTransition
     ? {
-        id: transactionId,
-        transition,
-        params: orderParams,
-      }
+      id: transactionId,
+      transition,
+      params: orderParams,
+    }
     : {
-        processAlias: config.bookingProcessAlias,
-        transition,
-        params: orderParams,
-      };
+      processAlias: config.bookingProcessAlias,
+      transition,
+      params: orderParams,
+    };
   const queryParams = {
     include: ['booking', 'provider'],
     expand: true,
@@ -209,6 +211,8 @@ export const initiateOrder = (orderParams, transactionId) => (dispatch, getState
       listingId: orderParams.listingId.uuid,
       bookingStart: orderParams.bookingStart,
       bookingEnd: orderParams.bookingEnd,
+      bookingDisplayStart: orderParams.bookingDisplayStart,
+      bookingDisplayEnd: orderParams.bookingDisplayEnd,
     });
     throw e;
   };
@@ -312,6 +316,8 @@ export const speculateTransaction = (orderParams, transactionId) => (dispatch, g
   const bookingData = {
     startDate: orderParams.bookingStart,
     endDate: orderParams.bookingEnd,
+    bookingDisplayStart: orderParams.bookingDisplayStart,
+    bookingDisplayEnd: orderParams.bookingDisplayEnd,
   };
 
   const params = {
@@ -321,15 +327,15 @@ export const speculateTransaction = (orderParams, transactionId) => (dispatch, g
 
   const bodyParams = isTransition
     ? {
-        id: transactionId,
-        transition,
-        params,
-      }
+      id: transactionId,
+      transition,
+      params,
+    }
     : {
-        processAlias: config.bookingProcessAlias,
-        transition,
-        params,
-      };
+      processAlias: config.bookingProcessAlias,
+      transition,
+      params,
+    };
 
   const queryParams = {
     include: ['booking', 'provider'],
@@ -346,11 +352,13 @@ export const speculateTransaction = (orderParams, transactionId) => (dispatch, g
   };
 
   const handleError = e => {
-    const { listingId, bookingStart, bookingEnd } = params;
+    const { listingId, bookingStart, bookingEnd, bookingDisplayStart, bookingDisplayEnd } = params;
     log.error(e, 'speculate-transaction-failed', {
       listingId: listingId.uuid,
       bookingStart,
       bookingEnd,
+      bookingDisplayStart,
+      bookingDisplayEnd,
     });
     return dispatch(speculateTransactionError(storableError(e)));
   };

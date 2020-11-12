@@ -274,3 +274,7 @@ export const formatDateToText = (intl, date) => {
     }),
   };
 };
+
+export const calculateBookingDate = (date, offset) => {
+  return moment(date).set({ h: offset }).toDate();
+}

@@ -5,12 +5,13 @@ import { Form as FinalForm, FormSpy } from 'react-final-form';
 import { FormattedMessage, intlShape, injectIntl } from '../../util/reactIntl';
 import classNames from 'classnames';
 import moment from 'moment';
-import { required, bookingDatesRequired, composeValidators } from '../../util/validators';
-import { START_DATE, END_DATE } from '../../util/dates';
+import { required, bookingDateRequired, composeValidators } from '../../util/validators';
+import { calculateBookingDate } from '../../util/dates';
 import { propTypes } from '../../util/types';
 import config from '../../config';
-import { Form, IconSpinner, PrimaryButton, FieldDateRangeInput } from '../../components';
+import { Form, IconSpinner, PrimaryButton, FieldDateInput, FieldSelect } from '../../components';
 import EstimatedBreakdownMaybe from './EstimatedBreakdownMaybe';
+import { BookingTimes } from './BookingTimes';
 
 import css from './BookingDatesForm.css';
 
@@ -19,32 +20,41 @@ const identity = v => v;
 export class BookingDatesFormComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { focusedInput: null };
+    // this.state = { focusedInput: null };
     this.handleFormSubmit = this.handleFormSubmit.bind(this);
-    this.onFocusedInputChange = this.onFocusedInputChange.bind(this);
+    // this.onFocusedInputChange = this.onFocusedInputChange.bind(this);
     this.handleOnChange = this.handleOnChange.bind(this);
   }
 
   // Function that can be passed to nested components
   // so that they can notify this component when the
   // focused input changes.
-  onFocusedInputChange(focusedInput) {
-    this.setState({ focusedInput });
-  }
+  // onFocusedInputChange(focusedInput) {
+  //   this.setState({ focusedInput });
+  // }
 
   // In case start or end date for the booking is missing
   // focus on that input, otherwise continue with the
   // default handleSubmit function.
   handleFormSubmit(e) {
-    const { startDate, endDate } = e.bookingDates || {};
-    if (!startDate) {
+    const startDate = e.bookingDates && e.bookingStartTime
+      ? calculateBookingDate(e.bookingDates.date, Number.parseInt(e.bookingStartTime))
+      : ""
+    const endDate = e.bookingDates && e.bookingStartTime
+      ? calculateBookingDate(e.bookingDates.date, Number.parseInt(e.bookingStartTime) + 24 + this.props.units)
+      : ""
+
+    const displayStart = e.bookingDates && e.bookingStartTime
+      ? calculateBookingDate(e.bookingDates.date, Number.parseInt(e.bookingStartTime))
+      : ""
+    const displayEnd = e.bookingDates && e.bookingStartTime
+      ? calculateBookingDate(e.bookingDates.date, Number.parseInt(e.bookingStartTime) + this.props.units)
+      : ""
+
+    if (!startDate || !endDate) {
       e.preventDefault();
-      this.setState({ focusedInput: START_DATE });
-    } else if (!endDate) {
-      e.preventDefault();
-      this.setState({ focusedInput: END_DATE });
     } else {
-      this.props.onSubmit(e);
+      this.props.onSubmit({ bookingDates: { startDate, endDate, displayStart, displayEnd }, seats: 1, units: this.props.units });
     }
   }
 
@@ -53,16 +63,36 @@ export class BookingDatesFormComponent extends Component {
   // In case you add more fields to the form, make sure you add
   // the values here to the bookingData object.
   handleOnChange(formValues) {
-    const { startDate, endDate } =
-      formValues.values && formValues.values.bookingDates ? formValues.values.bookingDates : {};
     const listingId = this.props.listingId;
     const isOwnListing = this.props.isOwnListing;
+    const seats = 1;
+    const units = this.props.units
+
+    const date = formValues.values && formValues.values.bookingDates
+      ? formValues.values.bookingDates.date : "";
+    const time = formValues.values && formValues.values.bookingStartTime
+      ? formValues.values.bookingStartTime : "";
+
+    const startDate = date && time
+      ? calculateBookingDate(date, Number.parseInt(time))
+      : "";
+    const endDate = date && time
+      ? calculateBookingDate(date, Number.parseInt(time) + 24 + units)
+      : "";
+
+    const displayStart = date && time
+      ? calculateBookingDate(date, Number.parseInt(time))
+      : "";
+    const displayEnd = date && time
+      ? calculateBookingDate(date, Number.parseInt(time) + units)
+      : "";
 
     if (startDate && endDate && !this.props.fetchLineItemsInProgress) {
       this.props.onFetchTransactionLineItems({
-        bookingData: { startDate, endDate },
+        bookingData: { startDate, endDate, displayStart, displayEnd, seats, units },
         listingId,
         isOwnListing,
+        customerId: this.props.currentUser.id.uuid
       });
     }
   }
@@ -97,14 +127,16 @@ export class BookingDatesFormComponent extends Component {
         onSubmit={this.handleFormSubmit}
         render={fieldRenderProps => {
           const {
-            endDatePlaceholder,
-            startDatePlaceholder,
+            datePlaceholder,
             formId,
             handleSubmit,
             intl,
             isOwnListing,
             submitButtonWrapperClassName,
             unitType,
+            units,
+            isTeacherType,
+            listingCategory,
             values,
             timeSlots,
             fetchTimeSlotsError,
@@ -112,23 +144,45 @@ export class BookingDatesFormComponent extends Component {
             fetchLineItemsInProgress,
             fetchLineItemsError,
           } = fieldRenderProps;
-          const { startDate, endDate } = values && values.bookingDates ? values.bookingDates : {};
+          // const { startDate, endDate } = values && values.bookingDates ? values.bookingDates : {};
 
-          const bookingStartLabel = intl.formatMessage({
-            id: 'BookingDatesForm.bookingStartTitle',
+          const startDate = values && values.bookingDates && values.bookingDates.date && values.bookingStartTime
+            ? calculateBookingDate(values.bookingDates.date, Number.parseInt(values.bookingStartTime))
+            : "";
+          const endDate = values && values.bookingDates && values.bookingDates.date && values.bookingStartTime
+            ? calculateBookingDate(values.bookingDates.date, Number.parseInt(values.bookingStartTime) + 24 + units)
+            : "";
+
+          const displayStart = values && values.bookingDates && values.bookingDates.date && values.bookingStartTime
+            ? calculateBookingDate(values.bookingDates.date, Number.parseInt(values.bookingStartTime))
+            : "";
+          const displayEnd = values && values.bookingDates && values.bookingDates.date && values.bookingStartTime
+            ? calculateBookingDate(values.bookingDates.date, Number.parseInt(values.bookingStartTime) + units)
+            : "";
+
+          const bookingTimesOptions = BookingTimes.slice(0, BookingTimes.length - units);
+
+          const bookingLabel = intl.formatMessage({
+            id: 'BookingDatesForm.bookingTitle',
           });
-          const bookingEndLabel = intl.formatMessage({
-            id: 'BookingDatesForm.bookingEndTitle',
-          });
+          // const bookingStartLabel = intl.formatMessage({
+          //   id: 'BookingDatesForm.bookingStartTitle',
+          // });
+          // const bookingEndLabel = intl.formatMessage({
+          //   id: 'BookingDatesForm.bookingEndTitle',
+          // });
           const requiredMessage = intl.formatMessage({
             id: 'BookingDatesForm.requiredDate',
           });
-          const startDateErrorMessage = intl.formatMessage({
-            id: 'FieldDateRangeInput.invalidStartDate',
+          const dateErrorMessage = intl.formatMessage({
+            id: 'FieldDateInput.invalidDate',
           });
-          const endDateErrorMessage = intl.formatMessage({
-            id: 'FieldDateRangeInput.invalidEndDate',
-          });
+          // const startDateErrorMessage = intl.formatMessage({
+          //   id: 'FieldDateRangeInput.invalidStartDate',
+          // });
+          // const endDateErrorMessage = intl.formatMessage({
+          //   id: 'FieldDateRangeInput.invalidEndDate',
+          // });
           const timeSlotsError = fetchTimeSlotsError ? (
             <p className={css.sideBarError}>
               <FormattedMessage id="BookingDatesForm.timeSlotsError" />
@@ -143,10 +197,14 @@ export class BookingDatesFormComponent extends Component {
           const bookingData =
             startDate && endDate
               ? {
-                  unitType,
-                  startDate,
-                  endDate,
-                }
+                unitType,
+                startDate,
+                endDate,
+                displayStart,
+                displayEnd,
+                units,
+                seats: 1
+              }
               : null;
 
           const showEstimatedBreakdown =
@@ -157,7 +215,12 @@ export class BookingDatesFormComponent extends Component {
               <h3 className={css.priceBreakdownTitle}>
                 <FormattedMessage id="BookingDatesForm.priceBreakdownTitle" />
               </h3>
-              <EstimatedBreakdownMaybe bookingData={bookingData} lineItems={lineItems} />
+              <EstimatedBreakdownMaybe
+                isTeacherType={isTeacherType}
+                listingCategory={listingCategory}
+                bookingData={bookingData}
+                lineItems={lineItems}
+              />
             </div>
           ) : null;
 
@@ -179,16 +242,31 @@ export class BookingDatesFormComponent extends Component {
 
           const now = moment();
           const today = now.startOf('day').toDate();
-          const tomorrow = now
-            .startOf('day')
-            .add(1, 'days')
-            .toDate();
-          const startDatePlaceholderText =
-            startDatePlaceholder || intl.formatDate(today, dateFormatOptions);
-          const endDatePlaceholderText =
-            endDatePlaceholder || intl.formatDate(tomorrow, dateFormatOptions);
+          // const tomorrow = now
+          //   .startOf('day')
+          //   .add(1, 'days')
+          //   .toDate();
+          const datePlaceholderText =
+            datePlaceholder || intl.formatDate(today, dateFormatOptions);
+          // const startDatePlaceholderText =
+          //   startDatePlaceholder || intl.formatDate(today, dateFormatOptions);
+          // const endDatePlaceholderText =
+          //   endDatePlaceholder || intl.formatDate(tomorrow, dateFormatOptions);
           const submitButtonClasses = classNames(
             submitButtonWrapperClassName || css.submitButtonWrapper
+          );
+
+          const startTimeLabel = intl.formatMessage({
+            id: 'BookingDatesForm.startTimeTitle',
+          });
+          // const endTimeLabel = intl.formatMessage({
+          //   id: 'BookingDatesForm.endTimeTitle',
+          // });
+          const startTimePlaceholder = 'Choose your start time'
+          const startTimeRequired = required(
+            intl.formatMessage({
+              id: 'FieldDateInput.startTimeRequired',
+            })
           );
 
           return (
@@ -200,27 +278,38 @@ export class BookingDatesFormComponent extends Component {
                   this.handleOnChange(values);
                 }}
               />
-              <FieldDateRangeInput
-                className={css.bookingDates}
+              <FieldDateInput
+                className={css.bookingDate}
                 name="bookingDates"
-                unitType={unitType}
-                startDateId={`${formId}.bookingStartDate`}
-                startDateLabel={bookingStartLabel}
-                startDatePlaceholderText={startDatePlaceholderText}
-                endDateId={`${formId}.bookingEndDate`}
-                endDateLabel={bookingEndLabel}
-                endDatePlaceholderText={endDatePlaceholderText}
-                focusedInput={this.state.focusedInput}
-                onFocusedInputChange={this.onFocusedInputChange}
+                id={`${formId}.bookingDate`}
+                label={bookingLabel}
+                placeholderText={datePlaceholderText}
                 format={identity}
                 timeSlots={timeSlots}
                 useMobileMargins
                 validate={composeValidators(
                   required(requiredMessage),
-                  bookingDatesRequired(startDateErrorMessage, endDateErrorMessage)
+                  bookingDateRequired(dateErrorMessage)
                 )}
                 disabled={fetchLineItemsInProgress}
               />
+
+              <FieldSelect
+                className={css.bookingTimes}
+                name="bookingStartTime"
+                id={`${formId}.bookingStartTime`}
+                label={startTimeLabel}
+                validate={startTimeRequired}
+              >
+                <option disabled value="">
+                  {startTimePlaceholder}
+                </option>
+                {bookingTimesOptions.map(opt => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </FieldSelect>
 
               {bookingInfoMaybe}
               {loadingSpinnerMaybe}

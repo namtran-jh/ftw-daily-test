@@ -3,6 +3,7 @@ import { FormattedMessage } from '../../util/reactIntl';
 import { displayMainImage } from '../../util/displayImage';
 import { ResponsiveImage, Modal, ImageCarousel } from '../../components';
 import ActionBarMaybe from './ActionBarMaybe';
+import { LISTING_CATEGORY_TEACHER } from '../../util/listingCategoryName'
 
 import css from './TeacherPage.css';
 
@@ -20,7 +21,9 @@ const SectionImages = props => {
 
   const { publicData } = listing.attributes;
 
-  const mainImage = publicData.isTeacherType ? displayMainImage(publicData.mainImage, listing.images) : listing.images;
+  const mainImage = publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
+    ? displayMainImage(publicData.mainImage, listing.images)
+    : listing.images;
   const hasImages = mainImage && mainImage.length > 0;
   const firstImage = hasImages ? mainImage[0] : null;
 

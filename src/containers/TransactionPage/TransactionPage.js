@@ -29,6 +29,7 @@ import { TopbarContainer } from '../../containers';
 
 import {
   acceptSale,
+  cancelSale,
   declineSale,
   loadData,
   setInitialValues,
@@ -70,9 +71,12 @@ export const TransactionPageComponent = props => {
     transactionRole,
     acceptInProgress,
     acceptSaleError,
+    cancelInProgress,
+    cancelSaleError,
     declineInProgress,
     declineSaleError,
     onAcceptSale,
+    onCancelSale,
     onDeclineSale,
     timeSlots,
     fetchTimeSlotsError,
@@ -129,6 +133,8 @@ export const TransactionPageComponent = props => {
       bookingDates: {
         bookingStart: dateFromAPIToLocalNoon(currentBooking.attributes.start),
         bookingEnd: dateFromAPIToLocalNoon(currentBooking.attributes.end),
+        bookingDisplayStart: currentBooking.attributes.displayStart,
+        bookingDisplayEnd: currentBooking.attributes.displayEnd,
       },
     };
 
@@ -147,6 +153,8 @@ export const TransactionPageComponent = props => {
       bookingDates: {
         bookingStart: bookingDates.startDate,
         bookingEnd: bookingDates.endDate,
+        bookingDisplayStart: bookingDates.displayStart,
+        bookingDisplayEnd: bookingDates.displayEnd
       },
       confirmPaymentError: null,
     };
@@ -204,10 +212,10 @@ export const TransactionPageComponent = props => {
       <FormattedMessage id={`${fetchErrorMessage}`} />
     </p>
   ) : (
-    <p className={css.loading}>
-      <FormattedMessage id={`${loadingMessage}`} />
-    </p>
-  );
+      <p className={css.loading}>
+        <FormattedMessage id={`${loadingMessage}`} />
+      </p>
+    );
 
   const initialMessageFailed = !!(
     initialMessageFailedToTransaction &&
@@ -239,10 +247,13 @@ export const TransactionPageComponent = props => {
       onSendReview={onSendReview}
       transactionRole={transactionRole}
       onAcceptSale={onAcceptSale}
+      onCancelSale={onCancelSale}
       onDeclineSale={onDeclineSale}
       acceptInProgress={acceptInProgress}
+      cancelInProgress={cancelInProgress}
       declineInProgress={declineInProgress}
       acceptSaleError={acceptSaleError}
+      cancelSaleError={cancelSaleError}
       declineSaleError={declineSaleError}
       nextTransitions={processTransitions}
       onSubmitBookingRequest={handleSubmitBookingRequest}
@@ -254,8 +265,8 @@ export const TransactionPageComponent = props => {
       fetchLineItemsError={fetchLineItemsError}
     />
   ) : (
-    loadingOrFailedFetching
-  );
+      loadingOrFailedFetching
+    );
 
   return (
     <Page
@@ -281,6 +292,7 @@ TransactionPageComponent.defaultProps = {
   currentUser: null,
   fetchTransactionError: null,
   acceptSaleError: null,
+  cancelSaleError: null,
   declineSaleError: null,
   transaction: null,
   fetchMessagesError: null,
@@ -301,10 +313,13 @@ TransactionPageComponent.propTypes = {
   currentUser: propTypes.currentUser,
   fetchTransactionError: propTypes.error,
   acceptSaleError: propTypes.error,
+  cancelSaleError: propTypes.error,
   declineSaleError: propTypes.error,
   acceptInProgress: bool.isRequired,
+  cancelInProgress: bool.isRequired,
   declineInProgress: bool.isRequired,
   onAcceptSale: func.isRequired,
+  onCancelSale: func.isRequired,
   onDeclineSale: func.isRequired,
   scrollingDisabled: bool.isRequired,
   transaction: propTypes.transaction,
@@ -345,8 +360,10 @@ const mapStateToProps = state => {
   const {
     fetchTransactionError,
     acceptSaleError,
+    cancelSaleError,
     declineSaleError,
     acceptInProgress,
+    cancelInProgress,
     declineInProgress,
     transactionRef,
     fetchMessagesInProgress,
@@ -376,8 +393,10 @@ const mapStateToProps = state => {
     currentUser,
     fetchTransactionError,
     acceptSaleError,
+    cancelSaleError,
     declineSaleError,
     acceptInProgress,
+    cancelInProgress,
     declineInProgress,
     scrollingDisabled: isScrollingDisabled(state),
     transaction,
@@ -404,6 +423,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     onAcceptSale: transactionId => dispatch(acceptSale(transactionId)),
+    onCancelSale: (transactionId, transType) => dispatch(cancelSale(transactionId, transType)),
     onDeclineSale: transactionId => dispatch(declineSale(transactionId)),
     onShowMoreMessages: txId => dispatch(fetchMoreMessages(txId)),
     onSendMessage: (txId, message) => dispatch(sendMessage(txId, message)),
@@ -413,8 +433,8 @@ const mapDispatchToProps = dispatch => {
       dispatch(sendReview(role, tx, reviewRating, reviewContent)),
     callSetInitialValues: (setInitialValues, values) => dispatch(setInitialValues(values)),
     onInitializeCardPaymentData: () => dispatch(initializeCardPaymentData()),
-    onFetchTransactionLineItems: (bookingData, listingId, isOwnListing) =>
-      dispatch(fetchTransactionLineItems(bookingData, listingId, isOwnListing)),
+    onFetchTransactionLineItems: (bookingData, listingId, isOwnListing, customerId) =>
+      dispatch(fetchTransactionLineItems(bookingData, listingId, isOwnListing, customerId)),
   };
 };
 

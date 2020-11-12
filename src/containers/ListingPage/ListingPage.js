@@ -240,10 +240,12 @@ export class ListingPageComponent extends Component {
       return <NamedRedirect name="ListingPage" params={params} search={location.search} />;
     }
 
-    const isTeacherType = currentListing.attributes.publicData.isTeacherType;
+    const { isTeacherType, listingCategory } = currentListing.attributes.publicData;
 
     if (isTeacherType) {
       return <NamedRedirect name="TeacherPage" params={params} search={location.search} />;
+    } else if (listingCategory) {
+      return <NamedRedirect name={`${listingCategory}Page`} params={params} search={location.search} />;
     }
 
     const {

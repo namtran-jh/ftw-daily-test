@@ -19,7 +19,7 @@ const LineItemUnitsMaybe = props => {
     throw new Error(`LineItemUnitsMaybe: lineItem (${unitType}) missing`);
   }
 
-  const quantity = unitPurchase.quantity;
+  const seats = unitPurchase.seats;
 
   return (
     <div className={css.lineItem}>
@@ -27,7 +27,7 @@ const LineItemUnitsMaybe = props => {
         <FormattedMessage id="BookingBreakdown.quantityUnit" />
       </span>
       <span className={css.itemValue}>
-        <FormattedMessage id="BookingBreakdown.quantity" values={{ quantity }} />
+        <FormattedMessage id="BookingBreakdown.quantity" values={{ seats }} />
       </span>
     </div>
   );

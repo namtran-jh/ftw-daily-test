@@ -60,6 +60,8 @@ import SectionHostMaybe from './SectionHostMaybe';
 import SectionMapMaybe from './SectionMapMaybe';
 import css from './TeacherPage.css';
 
+import { LISTING_CATEGORY_TEACHER } from '../../util/listingCategoryName';
+
 const MIN_LENGTH_FOR_LONG_WORDS_IN_TITLE = 16;
 
 const { UUID } = sdkTypes;
@@ -117,6 +119,8 @@ export class TeacherPageComponent extends Component {
       bookingDates: {
         bookingStart: bookingDates.startDate,
         bookingEnd: bookingDates.endDate,
+        bookingDisplayStart: bookingDates.displayStart,
+        bookingDisplayEnd: bookingDates.displayEnd
       },
       confirmPaymentError: null,
     };
@@ -239,9 +243,10 @@ export class TeacherPageComponent extends Component {
       return <NamedRedirect name="TeacherPage" params={params} search={location.search} />;
     }
 
-    const isTeacherType = currentListing.attributes.publicData.isTeacherType;
+    const { isTeacherType = undefined, listingCategory = undefined } = currentListing.attributes.publicData;
 
-    if (!isTeacherType) {
+    if ((!isTeacherType && listingCategory === undefined) ||
+      (isTeacherType === undefined && listingCategory !== LISTING_CATEGORY_TEACHER)) {
       return <NamedRedirect name="ListingPage" params={params} search={location.search} />;
     }
 
@@ -488,6 +493,7 @@ export class TeacherPageComponent extends Component {
                   className={css.bookingPanel}
                   listing={currentListing}
                   isOwnListing={isOwnListing}
+                  currentUser={currentUser}
                   unitType={unitType}
                   onSubmit={handleBookingSubmit}
                   title={bookingTitle}
@@ -624,8 +630,8 @@ const mapDispatchToProps = dispatch => ({
   onManageDisableScrolling: (componentId, disableScrolling) =>
     dispatch(manageDisableScrolling(componentId, disableScrolling)),
   callSetInitialValues: (setInitialValues, values) => dispatch(setInitialValues(values)),
-  onFetchTransactionLineItems: (bookingData, listingId, isOwnListing) =>
-    dispatch(fetchTransactionLineItems(bookingData, listingId, isOwnListing)),
+  onFetchTransactionLineItems: (bookingData, listingId, isOwnListing, customerId) =>
+    dispatch(fetchTransactionLineItems(bookingData, listingId, isOwnListing, customerId)),
   onSendEnquiry: (listingId, message) => dispatch(sendEnquiry(listingId, message)),
   onInitializeCardPaymentData: () => dispatch(initializeCardPaymentData()),
 });

@@ -49,6 +49,7 @@ import {
 } from './EditTeacherPage.duck';
 
 import css from './EditTeacherPage.css';
+import { LISTING_CATEGORY_TEACHER } from '../../util/listingCategoryName';
 
 const STRIPE_ONBOARDING_RETURN_URL_SUCCESS = 'success';
 const STRIPE_ONBOARDING_RETURN_URL_FAILURE = 'failure';
@@ -143,8 +144,10 @@ export const EditTeacherPageComponent = props => {
     return <NamedRedirect {...redirectProps} />;
   } else if (showForm) {
     if (params.type !== "new") {
-      const isTeacherType = currentListing.attributes.publicData.isTeacherType;
-      if (!isTeacherType) {
+      const { isTeacherType = undefined, listingCategory = undefined } = currentListing.attributes.publicData;
+
+      if ((!isTeacherType && listingCategory === undefined) ||
+        (isTeacherType === undefined && listingCategory !== LISTING_CATEGORY_TEACHER)) {
         return <NamedRedirect name="EditListingPage" params={params} />;
       }
     }
@@ -187,7 +190,11 @@ export const EditTeacherPageComponent = props => {
 
     const { publicData } = currentListing.attributes;
     // Main images are passed to EditTeacherForm so that it can generate thumbnails out of them
-    const currentMainImage = publicData.isTeacherType ? publicData.mainImage ? displayMainImage(publicData.mainImage, currentListing.images) : [] : currentListing.images;
+    const currentMainImage = publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
+      ? publicData.mainImage
+        ? displayMainImage(publicData.mainImage, currentListing.images)
+        : []
+      : currentListing.images;
     const currentListingMainImage = currentMainImage ? currentMainImage : [];
 
     // Main images not yet connected to the listing
@@ -201,7 +208,11 @@ export const EditTeacherPageComponent = props => {
     });
 
     // Main images are passed to EditTeacherForm so that it can generate thumbnails out of them
-    const currentOtherImage = publicData.isTeacherType ? publicData.mainImage ? displayOtherImage(publicData.mainImage, currentListing.images) : [] : currentListing.images;
+    const currentOtherImage = publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
+      ? publicData.mainImage
+        ? displayOtherImage(publicData.mainImage, currentListing.images)
+        : []
+      : currentListing.images;
     const currentListingOtherImage = currentOtherImage ? currentOtherImage : [];
 
     // Other images not yet connected to the listing

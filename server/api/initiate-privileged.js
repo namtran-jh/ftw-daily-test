@@ -1,5 +1,6 @@
 const { transactionLineItems } = require('../api-util/lineItems');
-const { getSdk, getTrustedSdk, handleError, serialize } = require('../api-util/sdk');
+const { getSdk, getIntergrationSdk, getTrustedSdk, handleError, serialize } = require('../api-util/sdk');
+const { isFirstPurchase } = require('../api-util/helper');
 
 module.exports = (req, res) => {
   const { isSpeculative, bookingData, bodyParams, queryParams } = req.body;
@@ -7,13 +8,24 @@ module.exports = (req, res) => {
   const listingId = bodyParams && bodyParams.params ? bodyParams.params.listingId : null;
 
   const sdk = getSdk(req, res);
+  const intergrationSdk = getIntergrationSdk(req, res);
   let lineItems = null;
 
   sdk.listings
     .show({ id: listingId })
-    .then(listingResponse => {
+    .then(async (listingResponse) => {
       const listing = listingResponse.data.data;
-      lineItems = transactionLineItems(listing, bookingData);
+
+      const fullBookingData = {
+        ...bookingData,
+        units: bodyParams.params.units,
+        seats: bodyParams.params.seats
+      }
+
+      const queryResult = await intergrationSdk.transactions.query({ customerId: bodyParams.params.customerId });
+      const isFirstTime = isFirstPurchase(queryResult.data);
+
+      lineItems = transactionLineItems(listing, fullBookingData, isFirstTime);
 
       return getTrustedSdk(req);
     })
@@ -28,7 +40,6 @@ module.exports = (req, res) => {
           lineItems,
         },
       };
-
       if (isSpeculative) {
         return trustedSdk.transactions.initiateSpeculative(body, queryParams);
       }

@@ -8,11 +8,23 @@ import { formatDate } from '../../util/dates';
 import { ensureTransaction, ensureUser, ensureListing } from '../../util/data';
 import {
   TRANSITION_ACCEPT,
-  TRANSITION_CANCEL,
+  TRANSITION_ACCEPT_AFTER_EXPIRE,
+  TRANSITION_CUSTOMER_CANCEL,
+  TRANSITION_CUSTOMER_CANCEL_NO_REFUND,
+  TRANSITION_CUSTOMER_CANCEL_AFTER_EXPIRE,
+  TRANSITION_PROVIDER_CANCEL_AFTER_EXPIRE,
+  TRANSITION_OPERATOR_CANCEL_AFTER_EXPIRE,
+  TRANSITION_CUSTOMER_CANCEL_BEFORE_EXPIRE,
+  TRANSITION_PROVIDER_CANCEL_BEFORE_EXPIRE,
+  TRANSITION_OPERATOR_CANCEL_BEFORE_EXPIRE,
   TRANSITION_COMPLETE,
-  TRANSITION_DECLINE,
-  TRANSITION_EXPIRE,
+  TRANSITION_COMPLETE_AFTER_EXPIRE,
   TRANSITION_CONFIRM_PAYMENT,
+  TRANSITION_DECLINE,
+  TRANSITION_DECLINE_AFTER_EXPIRE,
+  TRANSITION_EXPIRE_BOOKING_1,
+  TRANSITION_EXPIRE_BOOKING_2,
+  TRANSITION_EXPIRE_FULL_REFUND_PERIOD,
   TRANSITION_REVIEW_1_BY_CUSTOMER,
   TRANSITION_REVIEW_1_BY_PROVIDER,
   TRANSITION_REVIEW_2_BY_CUSTOMER,
@@ -120,31 +132,83 @@ const resolveTransitionMessage = (
       return isOwnTransition ? (
         <FormattedMessage id="ActivityFeed.ownTransitionRequest" values={{ listingTitle }} />
       ) : (
-        <FormattedMessage
-          id="ActivityFeed.transitionRequest"
-          values={{ displayName, listingTitle }}
-        />
-      );
+          <FormattedMessage
+            id="ActivityFeed.transitionRequest"
+            values={{ displayName, listingTitle }}
+          />
+        );
     case TRANSITION_ACCEPT:
       return isOwnTransition ? (
         <FormattedMessage id="ActivityFeed.ownTransitionAccept" />
       ) : (
-        <FormattedMessage id="ActivityFeed.transitionAccept" values={{ displayName }} />
-      );
+          <FormattedMessage id="ActivityFeed.transitionAccept" values={{ displayName }} />
+        );
+    case TRANSITION_ACCEPT_AFTER_EXPIRE:
+      return isOwnTransition ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionAccept" />
+      ) : (
+          <FormattedMessage id="ActivityFeed.transitionAccept" values={{ displayName }} />
+        );
     case TRANSITION_DECLINE:
       return isOwnTransition ? (
         <FormattedMessage id="ActivityFeed.ownTransitionDecline" />
       ) : (
-        <FormattedMessage id="ActivityFeed.transitionDecline" values={{ displayName }} />
-      );
-    case TRANSITION_EXPIRE:
+          <FormattedMessage id="ActivityFeed.transitionDecline" values={{ displayName }} />
+        );
+    case TRANSITION_DECLINE_AFTER_EXPIRE:
+      return isOwnTransition ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionDecline" />
+      ) : (
+          <FormattedMessage id="ActivityFeed.transitionDecline" values={{ displayName }} />
+        );
+    case TRANSITION_EXPIRE_BOOKING_1:
       return txRoleIsProvider(ownRole) ? (
         <FormattedMessage id="ActivityFeed.ownTransitionExpire" />
       ) : (
-        <FormattedMessage id="ActivityFeed.transitionExpire" values={{ displayName }} />
-      );
-    case TRANSITION_CANCEL:
-      return <FormattedMessage id="ActivityFeed.transitionCancel" />;
+          <FormattedMessage id="ActivityFeed.transitionExpire" values={{ displayName }} />
+        );
+    case TRANSITION_EXPIRE_BOOKING_2:
+      return txRoleIsProvider(ownRole) ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionExpire" />
+      ) : (
+          <FormattedMessage id="ActivityFeed.transitionExpire" values={{ displayName }} />
+        );
+    case TRANSITION_EXPIRE_FULL_REFUND_PERIOD:
+      return txRoleIsCustomer(ownRole) ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionExpireFullRefundPeriod" />
+      ) : null;
+    case TRANSITION_CUSTOMER_CANCEL:
+      return isOwnTransition ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionCustomerCancel" />
+      ) : (
+          <FormattedMessage id="ActivityFeed.transitionCustomerCancel" values={{ displayName }} />
+        );
+    case TRANSITION_CUSTOMER_CANCEL_NO_REFUND:
+      return isOwnTransition ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionCustomerCancelNoRefund" />
+      ) : (
+          <FormattedMessage id="ActivityFeed.transitionCustomerCancelNoRefund" values={{ displayName }} />
+        );
+    case TRANSITION_CUSTOMER_CANCEL_AFTER_EXPIRE:
+      return isOwnTransition ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionCustomerCancelNoRefund" />
+      ) : (
+          <FormattedMessage id="ActivityFeed.transitionCustomerCancelNoRefund" values={{ displayName }} />
+        );
+    case TRANSITION_CUSTOMER_CANCEL_BEFORE_EXPIRE:
+      return isOwnTransition ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionCustomerCancel" />
+      ) : (
+          <FormattedMessage id="ActivityFeed.transitionCustomerCancel" values={{ displayName }} />
+        );
+    case TRANSITION_PROVIDER_CANCEL_AFTER_EXPIRE:
+      return <FormattedMessage id="ActivityFeed.transitionCancelByProvider" />;
+    case TRANSITION_PROVIDER_CANCEL_BEFORE_EXPIRE:
+      return <FormattedMessage id="ActivityFeed.transitionCancelByProvider" />;
+    case TRANSITION_OPERATOR_CANCEL_AFTER_EXPIRE:
+      return <FormattedMessage id="ActivityFeed.transitionCancelByOperator" />;
+    case TRANSITION_OPERATOR_CANCEL_BEFORE_EXPIRE:
+      return <FormattedMessage id="ActivityFeed.transitionCancelByOperator" />;
     case TRANSITION_COMPLETE:
       // Show the leave a review link if the state is delivered and if the current user is the first to leave a review
       const reviewPeriodJustStarted = txIsDelivered(transaction);
@@ -155,6 +219,13 @@ const resolveTransitionMessage = (
         </InlineTextButton>
       ) : null;
 
+      return (
+        <FormattedMessage
+          id="ActivityFeed.transitionComplete"
+          values={{ reviewLink: reviewAsFirstLink }}
+        />
+      );
+    case TRANSITION_COMPLETE_AFTER_EXPIRE:
       return (
         <FormattedMessage
           id="ActivityFeed.transitionComplete"
@@ -230,8 +301,8 @@ const Transition = props => {
   const otherUsersName = txRoleIsProvider(ownRole) ? (
     <UserDisplayName user={customer} intl={intl} />
   ) : (
-    <UserDisplayName user={provider} intl={intl} />
-  );
+      <UserDisplayName user={provider} intl={intl} />
+    );
 
   const transitionMessage = resolveTransitionMessage(
     transaction,
@@ -253,15 +324,15 @@ const Transition = props => {
       reviewComponent = review ? (
         <Review content={review.attributes.content} rating={review.attributes.rating} />
       ) : (
-        <Review content={deletedReviewContent} />
-      );
+          <Review content={deletedReviewContent} />
+        );
     } else if (isProviderReview(currentTransition)) {
       const review = reviewByAuthorId(currentTransaction, provider.id);
       reviewComponent = review ? (
         <Review content={review.attributes.content} rating={review.attributes.rating} />
       ) : (
-        <Review content={deletedReviewContent} />
-      );
+          <Review content={deletedReviewContent} />
+        );
     }
   }
 

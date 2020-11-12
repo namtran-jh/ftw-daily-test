@@ -4,6 +4,7 @@ import { displayOtherImage } from '../../util/displayImage';
 import { ResponsiveImage, Modal, ImageCarousel } from '../../components';
 
 import css from './TeacherPage.css';
+import { LISTING_CATEGORY_TEACHER } from '../../util/listingCategoryName';
 
 const SectionOtherImage = props => {
   const [otherPhotoIndex, setOtherPhotoIndex] = useState(null);
@@ -17,7 +18,9 @@ const SectionOtherImage = props => {
   } = props;
   const { publicData } = listing.attributes;
 
-  const otherImages = publicData.isTeacherType ? displayOtherImage(publicData.mainImage, listing.images) : listing.images;
+  const otherImages = publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
+    ? displayOtherImage(publicData.mainImage, listing.images)
+    : listing.images;
 
   const handleViewOtherPhotos = (index) => {
     handleViewOtherPhotosClick();

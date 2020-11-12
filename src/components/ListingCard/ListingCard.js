@@ -11,6 +11,7 @@ import { createSlug } from '../../util/urlHelpers';
 import { displayMainImage } from '../../util/displayImage';
 import config from '../../config';
 import { NamedLink, ResponsiveImage } from '../../components';
+import { LISTING_CATEGORY_TEACHER } from '../../util/listingCategoryName'
 
 import css from './ListingCard.css';
 
@@ -51,7 +52,9 @@ export const ListingCardComponent = props => {
   const slug = createSlug(title);
   const author = ensureUser(listing.author);
   const authorName = author.attributes.profile.displayName;
-  const mainImage = publicData.isTeacherType ? displayMainImage(publicData.mainImage, currentListing.images) : currentListing.images;
+  const mainImage = publicData.isTeacherType || publicData.listingCategory === LISTING_CATEGORY_TEACHER
+    ? displayMainImage(publicData.mainImage, currentListing.images)
+    : currentListing.images;
   const firstImage =
     mainImage && mainImage.length > 0 ? mainImage[0] : null;
 
@@ -63,14 +66,25 @@ export const ListingCardComponent = props => {
 
   const unitTranslationKey = publicData.isTeacherType
     ? 'TeacherCard.perHour'
-    : isNightly
-      ? 'ListingCard.perNight'
-      : isDaily
-        ? 'ListingCard.perDay'
-        : 'ListingCard.perUnit';
+    : publicData.listingCategory
+      ? `${publicData.listingCategory}Card.perHour`
+      : isNightly
+        ? 'ListingCard.perNight'
+        : isDaily
+          ? 'ListingCard.perDay'
+          : 'ListingCard.perUnit';
 
   return (
-    <NamedLink className={classes} name={publicData.isTeacherType ? "TeacherPage" : "ListingPage"} params={{ id, slug }}>
+    <NamedLink
+      className={classes}
+      name={publicData.isTeacherType
+        ? "TeacherPage"
+        : publicData.listingCategory
+          ? `${publicData.listingCategory}Page`
+          : "ListingPage"
+      }
+      params={{ id, slug }}
+    >
       <div
         className={css.threeToTwoWrapper}
         onMouseEnter={() => setActiveListing(currentListing.id)}

@@ -130,9 +130,11 @@ export const EditListingPageComponent = props => {
     return <NamedRedirect {...redirectProps} />;
   } else if (showForm) {
     if (params.type !== "new") {
-      const isTeacherType = currentListing.attributes.publicData.isTeacherType;
+      const { isTeacherType, listingCategory } = currentListing.attributes.publicData;
       if (isTeacherType) {
         return <NamedRedirect name="EditTeacherPage" params={params} />;
+      } else if (listingCategory) {
+        return <NamedRedirect name={`Edit${listingCategory}Page`} params={params} />;
       }
     }
 
